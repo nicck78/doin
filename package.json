@@ -11,7 +11,8 @@
     "build": "vite build",
     "start": "vite build && electron .",
     "preview": "vite preview",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "package": "node scripts/package-desktop.cjs"
   },
   "keywords": [
     "todo",

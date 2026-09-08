@@ -18,7 +18,9 @@ function createWindow() {
     minHeight: 680,
     backgroundColor: '#0f172a',
     title: 'doin - 待办清单 & 专注计时',
-    icon: path.join(__dirname, '../public/logo.png'),
+    icon: fs.existsSync(path.join(__dirname, '../public/logo.ico'))
+      ? path.join(__dirname, '../public/logo.ico')
+      : path.join(__dirname, '../public/logo.png'),
     show: true, // 直接显示，不再处于隐形状态
     autoHideMenuBar: true,
     webPreferences: {

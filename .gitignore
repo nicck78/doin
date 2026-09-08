@@ -21,6 +21,7 @@ doin_data.json
 Thumbs.db
 .vscode/
 .idea/
+*.lnk
 
 # Testing
 coverage/
