@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production / Build Output
+dist/
+dist-electron/
+release/
+build/
+
+# Local User & Privacy Data
+doin_data.json
+*.local
+*.log
+
+# Environment & Editor
+.env
+.env.local
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Testing
+coverage/
