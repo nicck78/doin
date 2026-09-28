@@ -126,17 +126,18 @@ ipcMain.handle('window:set-mini-mode', async (_, isMini) => {
       if (!normalBounds) {
         normalBounds = mainWindow.getBounds();
       }
+      mainWindow.setResizable(false);
+      mainWindow.setMinimumSize(260, 70);
+      mainWindow.setContentSize(320, 92);
+
+      const [winWidth, winHeight] = mainWindow.getSize();
       const primaryDisplay = screen.getPrimaryDisplay();
       const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
-      const miniWidth = 270;
-      const miniHeight = 90;
-      const x = Math.max(0, screenWidth - miniWidth - 28);
-      const y = Math.max(0, screenHeight - miniHeight - 28);
+      const x = Math.max(0, screenWidth - winWidth - 24);
+      const y = Math.max(0, screenHeight - winHeight - 24);
 
-      mainWindow.setMinimumSize(220, 70);
-      mainWindow.setBounds({ x, y, width: miniWidth, height: miniHeight });
+      mainWindow.setPosition(x, y);
       mainWindow.setAlwaysOnTop(true, 'screen-saver');
-      mainWindow.setResizable(false);
       return { success: true, isMini: true };
     } else {
       mainWindow.setAlwaysOnTop(false);
