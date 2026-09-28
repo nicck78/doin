@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadData: () => ipcRenderer.invoke('storage:load'),
   saveData: (data) => ipcRenderer.invoke('storage:save', data),
   exportBackup: (data) => ipcRenderer.invoke('storage:export-backup', data),
-  importBackup: () => ipcRenderer.invoke('storage:import-backup')
+  importBackup: () => ipcRenderer.invoke('storage:import-backup'),
+  setMiniMode: (isMini) => ipcRenderer.invoke('window:set-mini-mode', isMini)
 });

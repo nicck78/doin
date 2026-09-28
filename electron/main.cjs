@@ -1,8 +1,9 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 let mainWindow = null;
+let normalBounds = null;
 
 // Determine data file path in user data folder
 const getDataFilePath = () => {
@@ -112,6 +113,47 @@ ipcMain.handle('storage:import-backup', async () => {
     const parsed = JSON.parse(content);
     return { success: true, data: parsed, filePath: filePaths[0] };
   } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC: Toggle Mini Capsule Mode (Picture-in-Picture)
+ipcMain.handle('window:set-mini-mode', async (_, isMini) => {
+  if (!mainWindow) return { success: false };
+
+  try {
+    if (isMini) {
+      if (!normalBounds) {
+        normalBounds = mainWindow.getBounds();
+      }
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+      const miniWidth = 270;
+      const miniHeight = 90;
+      const x = Math.max(0, screenWidth - miniWidth - 28);
+      const y = Math.max(0, screenHeight - miniHeight - 28);
+
+      mainWindow.setMinimumSize(220, 70);
+      mainWindow.setBounds({ x, y, width: miniWidth, height: miniHeight });
+      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      mainWindow.setResizable(false);
+      return { success: true, isMini: true };
+    } else {
+      mainWindow.setAlwaysOnTop(false);
+      mainWindow.setResizable(true);
+      mainWindow.setMinimumSize(980, 680);
+      if (normalBounds) {
+        mainWindow.setBounds(normalBounds);
+        normalBounds = null;
+      } else {
+        mainWindow.setSize(1240, 820);
+        mainWindow.center();
+      }
+      mainWindow.focus();
+      return { success: true, isMini: false };
+    }
+  } catch (err) {
+    console.error('Error toggling mini mode:', err);
     return { success: false, error: err.message };
   }
 });

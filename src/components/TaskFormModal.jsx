@@ -39,7 +39,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, taskToEdit }) {
     }
 
     onSave({
-      id: taskToEdit ? taskToEdit.id : `task-${Date.now()}`,
+      id: (taskToEdit && taskToEdit.id) ? taskToEdit.id : `task-${Date.now()}`,
       title: title.trim(),
       estimatedMinutes: Number(estimatedMinutes) || 25,
       startDate: validStart,

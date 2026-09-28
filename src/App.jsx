@@ -5,6 +5,8 @@ import CalendarGantt from './components/CalendarGantt.jsx';
 import FocusTimer from './components/FocusTimer.jsx';
 import TaskFormModal from './components/TaskFormModal.jsx';
 import DailyReviewModal from './components/DailyReviewModal.jsx';
+import MiniCapsule from './components/MiniCapsule.jsx';
+import { useTimerEngine } from './hooks/useTimerEngine.js';
 import { storageManager } from './storage/storageManager.js';
 import { getTodayString } from './utils/dateUtils.js';
 
@@ -24,6 +26,7 @@ export default function App() {
   const [reviewDateTarget, setReviewDateTarget] = useState(getTodayString());
 
   const [activeFocusTask, setActiveFocusTask] = useState(null);
+  const [isMiniMode, setIsMiniMode] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -123,15 +126,32 @@ export default function App() {
     setIsTaskModalOpen(true);
   };
 
-  const handleStartFocusOnTask = (task) => {
-    setActiveFocusTask(task);
-    setCurrentView('timer');
-  };
-
   const handleSaveFocusSession = (newSession) => {
     const updated = [newSession, ...focusSessions];
     setFocusSessions(updated);
     persistAllData(tasks, updated, dailyReviews);
+  };
+
+  const globalTimer = useTimerEngine({
+    tasks,
+    initialTask: activeFocusTask,
+    onSaveFocusSession: handleSaveFocusSession
+  });
+
+  const handleStartFocusOnTask = (task) => {
+    setActiveFocusTask(task);
+    globalTimer.setSelectedTaskId(task.id);
+    setCurrentView('timer');
+  };
+
+  const handleEnterMiniMode = async () => {
+    setIsMiniMode(true);
+    await storageManager.setMiniMode(true);
+  };
+
+  const handleExitMiniMode = async () => {
+    setIsMiniMode(false);
+    await storageManager.setMiniMode(false);
   };
 
   const handleSaveReview = (dateStr, reviewData) => {
@@ -182,6 +202,16 @@ export default function App() {
     );
   }
 
+  // 桌面迷你置顶悬浮药丸（画中画）模式：仅渲染悬浮胶囊
+  if (isMiniMode) {
+    return (
+      <MiniCapsule
+        timer={globalTimer}
+        onExitMiniMode={handleExitMiniMode}
+      />
+    );
+  }
+
   const today = getTodayString();
   const todaySessions = focusSessions.filter(s => s.date === today);
 
@@ -217,6 +247,16 @@ export default function App() {
             onQuickAddTask={handleQuickAddTask}
             onStartFocusOnTask={handleStartFocusOnTask}
             todayFocusSessions={todaySessions}
+            activeFocusTask={activeFocusTask}
+            onSaveFocusSession={handleSaveFocusSession}
+            todayReview={dailyReviews[today] || null}
+            onSaveReview={handleSaveReview}
+            onOpenReviewModal={(dateStr) => {
+              setReviewDateTarget(dateStr);
+              setIsReviewModalOpen(true);
+            }}
+            timer={globalTimer}
+            onEnterMiniMode={handleEnterMiniMode}
           />
         )}
 
@@ -231,6 +271,10 @@ export default function App() {
             }}
             onEditTask={handleEditTask}
             onToggleComplete={handleToggleComplete}
+            onAddNewTaskForDate={(targetDate) => {
+              setTaskToEdit({ startDate: targetDate, dueDate: targetDate });
+              setIsTaskModalOpen(true);
+            }}
           />
         )}
 
@@ -240,6 +284,8 @@ export default function App() {
             initialTask={activeFocusTask}
             onSaveFocusSession={handleSaveFocusSession}
             todaySessions={todaySessions}
+            timer={globalTimer}
+            onEnterMiniMode={handleEnterMiniMode}
           />
         )}
       </main>

@@ -95,5 +95,13 @@ export const storageManager = {
         input.click();
       });
     }
+  },
+
+  // 动态切换桌面迷你悬浮胶囊模式 (画中画)
+  async setMiniMode(isMini) {
+    if (this.isElectron() && window.electronAPI.setMiniMode) {
+      return await window.electronAPI.setMiniMode(isMini);
+    }
+    return { success: false, isMini };
   }
 };

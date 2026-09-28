@@ -7,6 +7,8 @@ import {
   diffInDays,
   formatTimeDisplay
 } from '../utils/dateUtils.js';
+import QuickFocusWidget from './QuickFocusWidget.jsx';
+import QuickJournalWidget from './QuickJournalWidget.jsx';
 
 export default function TodayTasks({
   tasks,
@@ -15,11 +17,19 @@ export default function TodayTasks({
   onEditTask,
   onQuickAddTask,
   onStartFocusOnTask,
-  todayFocusSessions = []
+  todayFocusSessions = [],
+  activeFocusTask = null,
+  onSaveFocusSession,
+  todayReview = null,
+  onSaveReview,
+  onOpenReviewModal,
+  timer = null,
+  onEnterMiniMode = null
 }) {
   const today = getTodayString();
   const [quickInput, setQuickInput] = useState('');
   const [deletingTaskId, setDeletingTaskId] = useState(null);
+  const [showFinished, setShowFinished] = useState(false);
   const inputRef = useRef(null);
 
   const todayTasks = tasks.filter(task => {
@@ -52,148 +62,195 @@ export default function TodayTasks({
   const finishedTasks = todayTasks.filter(t => t.isCompleted);
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8 space-y-6 animate-soft">
-      
-      {/* 极简标题与微进度条 */}
-      <div className="space-y-2.5 pb-2 border-b border-[#f1f3f5] dark:border-[#1a2233]">
-        <div className="flex items-baseline justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            今日
-          </h1>
-
-          <div className="flex items-center space-x-2 text-xs text-slate-400 dark:text-slate-500">
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
-              {completedCount}/{totalCount}
-            </span>
-            {totalFocusSeconds > 0 && (
-              <>
-                <span>·</span>
-                <span className="font-timer font-semibold text-[#0f2847] dark:text-blue-400">
-                  {formatTimeDisplay(totalFocusSeconds)}
+    <div className="max-w-6xl mx-auto px-6 py-6 animate-soft">
+      {/* 现代双栏工作台网格：左 7 列聚焦待办，右 5 列常驻效率伴侣 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+        
+        {/* ===================== 左主栏：今日待办流 (约 60%) ===================== */}
+        <div className="lg:col-span-7 space-y-5">
+          
+          {/* 标头与微进度条 */}
+          <div className="space-y-2 pb-2 border-b border-[#f1f3f5] dark:border-[#1a2233]">
+            <div className="flex items-baseline justify-between">
+              <div className="flex items-center space-x-2.5">
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                  今日待办
+                </h1>
+                <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  {today}
                 </span>
-              </>
+              </div>
+
+              <div className="flex items-center space-x-2 text-xs text-slate-400 dark:text-slate-500">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {completedCount}/{totalCount}
+                </span>
+                {totalFocusSeconds > 0 && (
+                  <>
+                    <span>·</span>
+                    <span className="font-timer font-semibold text-[#0f2847] dark:text-blue-400">
+                      {formatTimeDisplay(totalFocusSeconds)}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* 极细微进度线 */}
+            <div className="w-full bg-[#f1f3f5] dark:bg-[#161c2b] h-0.5 rounded-full overflow-hidden">
+              <div 
+                className="bg-[#0f2847] dark:bg-blue-500 h-full rounded-full transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* 极简快速录入输入框 */}
+          <form onSubmit={handleQuickSubmit} className="relative">
+            <div 
+              onClick={() => inputRef.current?.focus()}
+              className="relative flex items-center bg-white dark:bg-[#10141e] rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] hover:border-[#e2e8f0] dark:hover:border-[#28354d] focus-within:border-[#0f2847] dark:focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-[#0f2847]/10 transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
+            >
+              <div className="pl-3.5 pr-2 text-slate-400">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="快速记录想做的事... (按回车添加)"
+                value={quickInput}
+                onChange={(e) => setQuickInput(e.target.value)}
+                className="w-full py-2.5 pr-4 bg-transparent text-slate-900 dark:text-slate-100 text-xs sm:text-sm outline-none placeholder:text-slate-400 cursor-text"
+              />
+            </div>
+          </form>
+
+          {/* 待办分类列表 */}
+          <div className="space-y-4">
+            
+            {/* 1. 长期跨天任务 */}
+            {activeMultiDayTasks.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  长期推进
+                </div>
+                <div className="space-y-1.5">
+                  {activeMultiDayTasks.map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      today={today}
+                      isDeleting={deletingTaskId === task.id}
+                      onStartDelete={() => setDeletingTaskId(task.id)}
+                      onCancelDelete={() => setDeletingTaskId(null)}
+                      onConfirmDelete={() => handleConfirmDelete(task.id)}
+                      onToggleComplete={onToggleComplete}
+                      onEditTask={onEditTask}
+                      onStartFocusOnTask={onStartFocusOnTask}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-        </div>
 
-        {/* 极细微进度线 */}
-        <div className="w-full bg-[#f1f3f5] dark:bg-[#161c2b] h-0.5 rounded-full overflow-hidden">
-          <div 
-            className="bg-[#0f2847] dark:bg-blue-500 h-full rounded-full transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-      </div>
-
-      {/* 极简书写输入框 */}
-      <form onSubmit={handleQuickSubmit} className="relative">
-        <div 
-          onClick={() => inputRef.current?.focus()}
-          className="relative flex items-center bg-white dark:bg-[#10141e] rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] hover:border-[#e2e8f0] dark:hover:border-[#28354d] focus-within:border-[#0f2847] dark:focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-[#0f2847]/10 transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.02)]"
-        >
-          <div className="pl-3.5 pr-2 text-slate-400">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </div>
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="新待办..."
-            value={quickInput}
-            onChange={(e) => setQuickInput(e.target.value)}
-            className="w-full py-2.5 pr-4 bg-transparent text-slate-900 dark:text-slate-100 text-xs sm:text-sm outline-none placeholder:text-slate-400 cursor-text"
-          />
-        </div>
-      </form>
-
-      {/* 待办列表主体 */}
-      <div className="space-y-5">
-
-        {/* 长期 */}
-        {activeMultiDayTasks.length > 0 && (
-          <div className="space-y-1.5">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              长期
-            </div>
+            {/* 2. 今日待办 */}
             <div className="space-y-1.5">
-              {activeMultiDayTasks.map(task => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  today={today}
-                  isDeleting={deletingTaskId === task.id}
-                  onStartDelete={() => setDeletingTaskId(task.id)}
-                  onCancelDelete={() => setDeletingTaskId(null)}
-                  onConfirmDelete={() => handleConfirmDelete(task.id)}
-                  onToggleComplete={onToggleComplete}
-                  onEditTask={onEditTask}
-                  onStartFocusOnTask={onStartFocusOnTask}
-                />
-              ))}
+              {activeSingleDayTasks.length > 0 && (
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  单日任务
+                </div>
+              )}
+
+              {activeSingleDayTasks.length === 0 && activeMultiDayTasks.length === 0 ? (
+                <div className="py-12 text-center text-xs text-slate-300 dark:text-slate-600 paper-card rounded-2xl border border-dashed border-[#f1f3f5] dark:border-[#1a2233]">
+                  今日任务已全部搞定，享受此刻沉静
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {activeSingleDayTasks.map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      today={today}
+                      isDeleting={deletingTaskId === task.id}
+                      onStartDelete={() => setDeletingTaskId(task.id)}
+                      onCancelDelete={() => setDeletingTaskId(null)}
+                      onConfirmDelete={() => handleConfirmDelete(task.id)}
+                      onToggleComplete={onToggleComplete}
+                      onEditTask={onEditTask}
+                      onStartFocusOnTask={onStartFocusOnTask}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* 3. 已完成任务（支持折叠收起，避免刷屏嘈杂） */}
+            {finishedTasks.length > 0 && (
+              <div className="pt-3 border-t border-[#f1f3f5] dark:border-[#1a2233] space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setShowFinished(!showFinished)}
+                  className="flex items-center space-x-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                >
+                  <svg className={`w-3 h-3 transition-transform ${showFinished ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <span>已完成 ({finishedTasks.length})</span>
+                </button>
+
+                {showFinished && (
+                  <div className="space-y-1.5 opacity-65 pt-1 animate-soft">
+                    {finishedTasks.map(task => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        today={today}
+                        isDeleting={deletingTaskId === task.id}
+                        onStartDelete={() => setDeletingTaskId(task.id)}
+                        onCancelDelete={() => setDeletingTaskId(null)}
+                        onConfirmDelete={() => handleConfirmDelete(task.id)}
+                        onToggleComplete={onToggleComplete}
+                        onEditTask={onEditTask}
+                        onStartFocusOnTask={onStartFocusOnTask}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
-        )}
 
-        {/* 待办 */}
-        <div className="space-y-1.5">
-          {activeSingleDayTasks.length > 0 && (
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              待办
-            </div>
-          )}
-
-          {activeSingleDayTasks.length === 0 && activeMultiDayTasks.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-300 dark:text-slate-600">
-              暂无待办
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {activeSingleDayTasks.map(task => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  today={today}
-                  isDeleting={deletingTaskId === task.id}
-                  onStartDelete={() => setDeletingTaskId(task.id)}
-                  onCancelDelete={() => setDeletingTaskId(null)}
-                  onConfirmDelete={() => handleConfirmDelete(task.id)}
-                  onToggleComplete={onToggleComplete}
-                  onEditTask={onEditTask}
-                  onStartFocusOnTask={onStartFocusOnTask}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* 完成 */}
-        {finishedTasks.length > 0 && (
-          <div className="space-y-1.5 pt-3 border-t border-[#f1f3f5] dark:border-[#1a2233]">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              完成
-            </div>
-            <div className="space-y-1.5 opacity-60">
-              {finishedTasks.map(task => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  today={today}
-                  isDeleting={deletingTaskId === task.id}
-                  onStartDelete={() => setDeletingTaskId(task.id)}
-                  onCancelDelete={() => setDeletingTaskId(null)}
-                  onConfirmDelete={() => handleConfirmDelete(task.id)}
-                  onToggleComplete={onToggleComplete}
-                  onEditTask={onEditTask}
-                  onStartFocusOnTask={onStartFocusOnTask}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        {/* ===================== 右副栏：常驻效率伴侣 (约 40%) ===================== */}
+        <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-20">
+          
+          {/* 上半部：极简专注时钟 */}
+          <QuickFocusWidget
+            tasks={tasks}
+            initialTask={activeFocusTask}
+            onSaveFocusSession={onSaveFocusSession}
+            todaySessions={todayFocusSessions}
+            timer={timer}
+            onEnterMiniMode={onEnterMiniMode}
+          />
+
+          {/* 下半部：免弹窗随手今日日记本 */}
+          <QuickJournalWidget
+            todayReview={todayReview}
+            dayTasks={todayTasks}
+            dayFocusSessions={todayFocusSessions}
+            onSaveReview={onSaveReview}
+            onOpenExpandModal={() => onOpenReviewModal(today)}
+          />
+
+        </div>
 
       </div>
-
     </div>
   );
 }
@@ -214,11 +271,11 @@ function TaskCard({
   const remainingDays = isMulti ? diffInDays(today, task.dueDate) : 0;
 
   return (
-    <div className={`group relative flex items-center justify-between px-3.5 py-2.5 paper-card rounded-xl ${
+    <div className={`group relative flex items-center justify-between px-3.5 py-2.5 paper-card rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] transition-all ${
       task.isCompleted ? 'opacity-65 line-through' : ''
     }`}>
       
-      {/* 左侧颜色标线 */}
+      {/* 左侧专属色彩微光标线 */}
       <div 
         className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full"
         style={{ backgroundColor: colorObj.hex }}
@@ -266,7 +323,7 @@ function TaskCard({
         </div>
       </div>
 
-      {/* 右侧动作按钮 */}
+      {/* 右侧悬浮动作按钮 */}
       <div className="flex items-center space-x-1 pl-2">
         {isDeleting ? (
           <div className="flex items-center space-x-1 animate-soft">
@@ -291,7 +348,7 @@ function TaskCard({
               <button
                 type="button"
                 onClick={() => onStartFocusOnTask(task)}
-                title="专注"
+                title="专注此任务"
                 className="px-2 py-0.5 text-xs font-semibold text-[#0f2847] dark:text-blue-400 hover:bg-[#f8f9fa] dark:hover:bg-[#182235] rounded transition-colors"
               >
                 专注

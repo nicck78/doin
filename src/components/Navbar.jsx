@@ -17,8 +17,8 @@ export default function Navbar({
   ];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[#f1f3f5] dark:border-[#1a2233] bg-white/95 dark:bg-[#0a0d14]/95 backdrop-blur-md px-6 py-2.5 transition-colors">
-      <div className="max-w-4xl mx-auto flex items-center justify-between">
+    <header className="sticky top-0 z-30 border-b border-[#f1f3f5] dark:border-[#1a2233] bg-white/95 dark:bg-[#0a0d14]/95 backdrop-blur-md py-2.5 transition-colors">
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
         
         {/* 左侧：IP 标识与极简导航 */}
         <div className="flex items-center space-x-6">
