@@ -5,14 +5,17 @@ import CalendarGantt from './components/CalendarGantt.jsx';
 import FocusTimer from './components/FocusTimer.jsx';
 import TaskFormModal from './components/TaskFormModal.jsx';
 import DailyReviewModal from './components/DailyReviewModal.jsx';
+import SettingsModal from './components/SettingsModal.jsx';
 import MiniCapsule from './components/MiniCapsule.jsx';
 import { useTimerEngine } from './hooks/useTimerEngine.js';
 import { storageManager } from './storage/storageManager.js';
-import { getTodayString } from './utils/dateUtils.js';
+import { getTodayString, isTaskActiveOnDate } from './utils/dateUtils.js';
+import { LanguageProvider } from './locales/LanguageContext.jsx';
 
 export default function App() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [theme, setTheme] = useState('dark');
+  const [lang, setLang] = useState('zh');
   const [currentView, setCurrentView] = useState('today');
 
   const [tasks, setTasks] = useState([]);
@@ -25,6 +28,8 @@ export default function App() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewDateTarget, setReviewDateTarget] = useState(getTodayString());
 
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
   const [activeFocusTask, setActiveFocusTask] = useState(null);
   const [isMiniMode, setIsMiniMode] = useState(false);
 
@@ -36,6 +41,7 @@ export default function App() {
         setFocusSessions(data.focusSessions || []);
         setDailyReviews(data.dailyReviews || {});
         if (data.theme) setTheme(data.theme);
+        if (data.lang) setLang(data.lang);
       }
       setDataLoaded(true);
     }
@@ -51,10 +57,11 @@ export default function App() {
     }
   }, [theme]);
 
-  const persistAllData = async (newTasks, newSessions, newReviews, newTheme = theme) => {
+  const persistAllData = async (newTasks, newSessions, newReviews, newTheme = theme, newLang = lang) => {
     const payload = {
       version: '1.0.0',
       theme: newTheme,
+      lang: newLang,
       tasks: newTasks,
       focusSessions: newSessions,
       dailyReviews: newReviews
@@ -62,10 +69,14 @@ export default function App() {
     await storageManager.save(payload);
   };
 
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    persistAllData(tasks, focusSessions, dailyReviews, nextTheme);
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+    persistAllData(tasks, focusSessions, dailyReviews, newTheme, lang);
+  };
+
+  const handleLangChange = (newLang) => {
+    setLang(newLang);
+    persistAllData(tasks, focusSessions, dailyReviews, theme, newLang);
   };
 
   const handleToggleComplete = (taskId) => {
@@ -114,7 +125,6 @@ export default function App() {
     persistAllData(updated, focusSessions, dailyReviews);
   };
 
-  // 移除了原生 window.confirm，完全由 UI 内联卡片做防误触确认，杜绝焦点锁定 Bug
   const handleDeleteTask = (taskId) => {
     const updated = tasks.filter(t => t.id !== taskId);
     setTasks(updated);
@@ -124,6 +134,46 @@ export default function App() {
   const handleEditTask = (task) => {
     setTaskToEdit(task);
     setIsTaskModalOpen(true);
+  };
+
+  const handleScheduleTaskToday = (task) => {
+    const today = getTodayString();
+    const updated = tasks.map(t => {
+      if (t.id === task.id) {
+        return { ...t, startDate: today, dueDate: today };
+      }
+      return t;
+    });
+    setTasks(updated);
+    persistAllData(updated, focusSessions, dailyReviews);
+  };
+
+  const handleStripTaskDate = (task) => {
+    const updated = tasks.map(t => {
+      if (t.id === task.id) {
+        return { ...t, startDate: null, dueDate: null };
+      }
+      return t;
+    });
+    setTasks(updated);
+    persistAllData(updated, focusSessions, dailyReviews);
+  };
+
+  const handleQuickAddUnscheduled = (title) => {
+    const newTask = {
+      id: `task-${Date.now()}`,
+      title,
+      estimatedMinutes: 25,
+      startDate: null,
+      dueDate: null,
+      color: 'indigo',
+      isCompleted: false,
+      completedAt: null,
+      createdAt: new Date().toISOString()
+    };
+    const updated = [newTask, ...tasks];
+    setTasks(updated);
+    persistAllData(updated, focusSessions, dailyReviews);
   };
 
   const handleSaveFocusSession = (newSession) => {
@@ -167,6 +217,7 @@ export default function App() {
     const currentData = {
       version: '1.0.0',
       theme,
+      lang,
       tasks,
       focusSessions,
       dailyReviews,
@@ -174,7 +225,7 @@ export default function App() {
     };
     const res = await storageManager.exportBackup(currentData);
     if (res.success) {
-      alert('备份成功导出！文件已安全保存在你的电脑中。');
+      alert(lang === 'en' ? 'Backup exported successfully!' : '备份成功导出！文件已安全保存在你的电脑中。');
     }
   };
 
@@ -186,8 +237,9 @@ export default function App() {
       setFocusSessions(d.focusSessions || []);
       setDailyReviews(d.dailyReviews || {});
       if (d.theme) setTheme(d.theme);
-      await persistAllData(d.tasks || [], d.focusSessions || [], d.dailyReviews || {}, d.theme || theme);
-      alert('数据恢复成功！');
+      if (d.lang) setLang(d.lang);
+      await persistAllData(d.tasks || [], d.focusSessions || [], d.dailyReviews || {}, d.theme || theme, d.lang || lang);
+      alert(lang === 'en' ? 'Data restored successfully!' : '数据恢复成功！');
     }
   };
 
@@ -205,10 +257,12 @@ export default function App() {
   // 桌面迷你置顶悬浮药丸（画中画）模式：仅渲染悬浮胶囊
   if (isMiniMode) {
     return (
-      <MiniCapsule
-        timer={globalTimer}
-        onExitMiniMode={handleExitMiniMode}
-      />
+      <LanguageProvider initialLang={lang} onLangChange={handleLangChange}>
+        <MiniCapsule
+          timer={globalTimer}
+          onExitMiniMode={handleExitMiniMode}
+        />
+      </LanguageProvider>
     );
   }
 
@@ -216,102 +270,120 @@ export default function App() {
   const todaySessions = focusSessions.filter(s => s.date === today);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
-      
-      {/* 顶部纯色导航栏 */}
-      <Navbar
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        theme={theme}
-        toggleTheme={toggleTheme}
-        onExportBackup={handleExportBackup}
-        onImportBackup={handleImportBackup}
-        onOpenNewTask={() => {
-          setTaskToEdit(null);
-          setIsTaskModalOpen(true);
-        }}
-        onOpenReviewModal={(dateStr) => {
-          setReviewDateTarget(dateStr);
-          setIsReviewModalOpen(true);
-        }}
-      />
+    <LanguageProvider initialLang={lang} onLangChange={handleLangChange}>
+      <div className="min-h-screen flex flex-col bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+        
+        {/* 顶部纯色导航栏 */}
+        <Navbar
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          onOpenSettings={() => setIsSettingsModalOpen(true)}
+          onExportBackup={handleExportBackup}
+          onImportBackup={handleImportBackup}
+          onOpenNewTask={() => {
+            setTaskToEdit(null);
+            setIsTaskModalOpen(true);
+          }}
+          onOpenReviewModal={(dateStr) => {
+            setReviewDateTarget(dateStr);
+            setIsReviewModalOpen(true);
+          }}
+        />
 
-      {/* 主视图区域 */}
-      <main className="flex-1 pb-16">
-        {currentView === 'today' && (
-          <TodayTasks
-            tasks={tasks}
-            onToggleComplete={handleToggleComplete}
-            onDeleteTask={handleDeleteTask}
-            onEditTask={handleEditTask}
-            onQuickAddTask={handleQuickAddTask}
-            onStartFocusOnTask={handleStartFocusOnTask}
-            todayFocusSessions={todaySessions}
-            activeFocusTask={activeFocusTask}
-            onSaveFocusSession={handleSaveFocusSession}
-            todayReview={dailyReviews[today] || null}
-            onSaveReview={handleSaveReview}
-            onOpenReviewModal={(dateStr) => {
-              setReviewDateTarget(dateStr);
-              setIsReviewModalOpen(true);
-            }}
-            timer={globalTimer}
-            onEnterMiniMode={handleEnterMiniMode}
-          />
-        )}
+        {/* 主视图区域 */}
+        <main className="flex-1 pb-16">
+          {currentView === 'today' && (
+            <TodayTasks
+              tasks={tasks}
+              onToggleComplete={handleToggleComplete}
+              onDeleteTask={handleDeleteTask}
+              onEditTask={handleEditTask}
+              onQuickAddTask={handleQuickAddTask}
+              onStartFocusOnTask={handleStartFocusOnTask}
+              todayFocusSessions={todaySessions}
+              activeFocusTask={activeFocusTask}
+              onSaveFocusSession={handleSaveFocusSession}
+              todayReview={dailyReviews[today] || null}
+              onSaveReview={handleSaveReview}
+              onOpenReviewModal={(dateStr) => {
+                setReviewDateTarget(dateStr);
+                setIsReviewModalOpen(true);
+              }}
+              timer={globalTimer}
+              onEnterMiniMode={handleEnterMiniMode}
+            />
+          )}
 
-        {currentView === 'calendar' && (
-          <CalendarGantt
-            tasks={tasks}
-            dailyReviews={dailyReviews}
-            focusSessions={focusSessions}
-            onOpenReviewModal={(dateStr) => {
-              setReviewDateTarget(dateStr);
-              setIsReviewModalOpen(true);
-            }}
-            onEditTask={handleEditTask}
-            onToggleComplete={handleToggleComplete}
-            onAddNewTaskForDate={(targetDate) => {
-              setTaskToEdit({ startDate: targetDate, dueDate: targetDate });
-              setIsTaskModalOpen(true);
-            }}
-          />
-        )}
+          {currentView === 'calendar' && (
+            <CalendarGantt
+              tasks={tasks}
+              dailyReviews={dailyReviews}
+              focusSessions={focusSessions}
+              onOpenReviewModal={(dateStr) => {
+                setReviewDateTarget(dateStr);
+                setIsReviewModalOpen(true);
+              }}
+              onEditTask={handleEditTask}
+              onToggleComplete={handleToggleComplete}
+              onAddNewTaskForDate={(targetDate) => {
+                setTaskToEdit({ startDate: targetDate, dueDate: targetDate });
+                setIsTaskModalOpen(true);
+              }}
+              onScheduleTaskToday={handleScheduleTaskToday}
+              onStripTaskDate={handleStripTaskDate}
+              onQuickAddUnscheduled={handleQuickAddUnscheduled}
+              onAddNewUnscheduledTask={() => {
+                setTaskToEdit({ startDate: null, dueDate: null });
+                setIsTaskModalOpen(true);
+              }}
+            />
+          )}
 
-        {currentView === 'timer' && (
-          <FocusTimer
-            tasks={tasks}
-            initialTask={activeFocusTask}
-            onSaveFocusSession={handleSaveFocusSession}
-            todaySessions={todaySessions}
-            timer={globalTimer}
-            onEnterMiniMode={handleEnterMiniMode}
-          />
-        )}
-      </main>
+          {currentView === 'timer' && (
+            <FocusTimer
+              tasks={tasks}
+              initialTask={activeFocusTask}
+              onSaveFocusSession={handleSaveFocusSession}
+              todaySessions={todaySessions}
+              timer={globalTimer}
+              onEnterMiniMode={handleEnterMiniMode}
+            />
+          )}
+        </main>
 
-      {/* 任务弹窗 */}
-      <TaskFormModal
-        isOpen={isTaskModalOpen}
-        onClose={() => {
-          setIsTaskModalOpen(false);
-          setTaskToEdit(null);
-        }}
-        onSave={handleSaveTask}
-        taskToEdit={taskToEdit}
-      />
+        {/* 设置中心弹窗 */}
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          theme={theme}
+          onThemeChange={handleThemeChange}
+          onExportBackup={handleExportBackup}
+          onImportBackup={handleImportBackup}
+        />
 
-      {/* 每日日志弹窗（单输入框笔记本纯净体验） */}
-      <DailyReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-        dateStr={reviewDateTarget}
-        initialReview={dailyReviews[reviewDateTarget] || null}
-        dayTasks={tasks.filter(t => t.startDate <= reviewDateTarget && reviewDateTarget <= t.dueDate)}
-        dayFocusSessions={focusSessions.filter(s => s.date === reviewDateTarget)}
-        onSaveReview={handleSaveReview}
-      />
+        {/* 任务弹窗 */}
+        <TaskFormModal
+          isOpen={isTaskModalOpen}
+          onClose={() => {
+            setIsTaskModalOpen(false);
+            setTaskToEdit(null);
+          }}
+          onSave={handleSaveTask}
+          taskToEdit={taskToEdit}
+        />
 
-    </div>
+        {/* 每日日志弹窗（单输入框笔记本纯净体验） */}
+        <DailyReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          dateStr={reviewDateTarget}
+          initialReview={dailyReviews[reviewDateTarget] || null}
+          dayTasks={tasks.filter(t => isTaskActiveOnDate(t, reviewDateTarget))}
+          dayFocusSessions={focusSessions.filter(s => s.date === reviewDateTarget)}
+          onSaveReview={handleSaveReview}
+        />
+
+      </div>
+    </LanguageProvider>
   );
 }

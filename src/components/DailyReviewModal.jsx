@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getFriendlyDateLabel, getTodayString, formatTimeDisplay } from '../utils/dateUtils.js';
+import { useLanguage } from '../locales/LanguageContext.jsx';
 
 export default function DailyReviewModal({
   isOpen,
@@ -10,6 +11,7 @@ export default function DailyReviewModal({
   dayFocusSessions = [],
   onSaveReview
 }) {
+  const { t, lang } = useLanguage();
   const [logContent, setLogContent] = useState('');
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function DailyReviewModal({
     onClose();
   };
 
-  const friendlyDate = getFriendlyDateLabel(dateStr);
+  const friendlyDate = getFriendlyDateLabel(dateStr, lang);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-soft">
@@ -53,11 +55,11 @@ export default function DailyReviewModal({
         {/* 顶部标题 */}
         <div className="flex items-center justify-between pb-3 border-b border-[#f1f3f5] dark:border-[#1a2233]">
           <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-            日志 · {friendlyDate}
+            {t('modal.journalTitle')} · {friendlyDate}
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -67,9 +69,9 @@ export default function DailyReviewModal({
 
         {/* 当日事实 */}
         <div className="my-3 px-3 py-1.5 rounded-lg bg-[#fcfcfd] dark:bg-[#0a0d14] border border-[#f1f3f5] dark:border-[#1a2233] flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-          <span>完成 {completedTasks.length}/{dayTasks.length}</span>
+          <span>{t('journal.doneRatio', { done: completedTasks.length, total: dayTasks.length })}</span>
           {totalFocusSeconds > 0 && (
-            <span>专注 {formatTimeDisplay(totalFocusSeconds)}</span>
+            <span>{t('journal.focusTime', { time: formatTimeDisplay(totalFocusSeconds) })}</span>
           )}
         </div>
 
@@ -78,7 +80,7 @@ export default function DailyReviewModal({
           <textarea
             autoFocus
             rows={8}
-            placeholder="记录今天..."
+            placeholder={t('modal.journalPlaceholder')}
             value={logContent}
             onChange={(e) => setLogContent(e.target.value)}
             className="w-full flex-1 p-3.5 rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] bg-transparent text-slate-900 dark:text-slate-100 text-xs sm:text-sm leading-relaxed outline-none focus:border-[#0f2847] dark:focus:border-blue-500 resize-none"
@@ -89,15 +91,15 @@ export default function DailyReviewModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg"
+              className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg cursor-pointer"
             >
-              取消
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 text-xs font-semibold text-white bg-[#0f2847] hover:bg-[#183a63] dark:bg-blue-600 dark:hover:bg-blue-700 rounded-lg transition-all"
+              className="px-4 py-1.5 text-xs font-semibold text-white bg-[#0f2847] hover:bg-[#183a63] dark:bg-blue-600 dark:hover:bg-blue-700 rounded-lg transition-all cursor-pointer"
             >
-              保存
+              {t('common.save')}
             </button>
           </div>
         </form>

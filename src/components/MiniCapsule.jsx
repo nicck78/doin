@@ -1,10 +1,12 @@
 import React from 'react';
 import { formatTimeDisplay } from '../utils/dateUtils.js';
+import { useLanguage } from '../locales/LanguageContext.jsx';
 
 export default function MiniCapsule({
   timer,
   onExitMiniMode
 }) {
+  const { t } = useLanguage();
   const {
     displaySeconds,
     status,
@@ -18,7 +20,7 @@ export default function MiniCapsule({
   return (
     <div 
       onDoubleClick={onExitMiniMode}
-      title="按住任意空白处可拖动悬浮窗，双击还原大窗口"
+      title={t('focus.restore')}
       style={{ WebkitAppRegion: 'drag' }}
       className="w-full h-screen p-2 select-none box-border flex flex-col justify-between bg-white dark:bg-[#0c101a] text-slate-900 dark:text-slate-100 overflow-hidden"
     >
@@ -28,9 +30,9 @@ export default function MiniCapsule({
           <span className={`w-2 h-2 rounded-full flex-shrink-0 ${status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-blue-500'}`} />
           <span 
             className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 truncate max-w-[220px]"
-            title={selectedTaskTitle || '自由专注'}
+            title={selectedTaskTitle || t('focus.freeFocus')}
           >
-            {selectedTaskTitle || '自由专注'}
+            {selectedTaskTitle || t('focus.freeFocus')}
           </span>
         </div>
 
@@ -39,7 +41,7 @@ export default function MiniCapsule({
           type="button"
           style={{ WebkitAppRegion: 'no-drag' }}
           onClick={onExitMiniMode}
-          title="双击药丸或点击此处还原大窗口"
+          title={t('focus.restore')}
           className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1a2233] transition-colors cursor-pointer flex-shrink-0"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,7 +68,7 @@ export default function MiniCapsule({
               onClick={handleStart}
               className="px-3 py-1 rounded-lg bg-[#0f2847] hover:bg-[#183a63] dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
             >
-              开始
+              {t('focus.start')}
             </button>
           )}
 
@@ -75,15 +77,15 @@ export default function MiniCapsule({
               <button
                 type="button"
                 onClick={handlePause}
-                title="暂停"
+                title={t('focus.pause')}
                 className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
               >
-                暂停
+                {t('focus.pause')}
               </button>
               <button
                 type="button"
                 onClick={() => handleCompleteSession()}
-                title="完成本次专注"
+                title={t('focus.complete')}
                 className="p-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,12 +102,12 @@ export default function MiniCapsule({
                 onClick={handleResume}
                 className="px-2.5 py-1 rounded-lg bg-[#0f2847] dark:bg-blue-600 text-white font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
               >
-                继续
+                {t('focus.resume')}
               </button>
               <button
                 type="button"
                 onClick={() => handleCompleteSession()}
-                title="保存记录"
+                title={t('common.save')}
                 className="p-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { formatTimeDisplay } from '../utils/dateUtils.js';
 import { useTimerEngine } from '../hooks/useTimerEngine.js';
+import { useLanguage } from '../locales/LanguageContext.jsx';
 
 export default function FocusTimer({
   tasks = [],
@@ -10,6 +11,7 @@ export default function FocusTimer({
   timer: externalTimer,
   onEnterMiniMode
 }) {
+  const { t } = useLanguage();
   const fallbackTimer = useTimerEngine({ tasks, initialTask, onSaveFocusSession });
   const timer = externalTimer || fallbackTimer;
 
@@ -51,14 +53,14 @@ export default function FocusTimer({
                 setIsZenMode(false);
                 onEnterMiniMode();
               }}
-              title="转为桌面置顶悬浮药丸"
+              title={t('focus.miniCapsule')}
               className="px-3 py-1 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 border border-[#f1f3f5] dark:border-[#1a2233] rounded-xl hover:bg-[#f8f9fa] dark:hover:bg-[#121724] transition-all cursor-pointer flex items-center space-x-1"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2" />
                 <rect x="11" y="11" width="8" height="6" rx="1" fill="currentColor" fillOpacity="0.4" strokeWidth="1.5" />
               </svg>
-              <span>悬浮药丸</span>
+              <span>{t('focus.miniCapsule')}</span>
             </button>
           )}
 
@@ -66,13 +68,13 @@ export default function FocusTimer({
             onClick={() => setIsZenMode(false)}
             className="px-3 py-1 text-xs font-semibold text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-[#f1f3f5] dark:border-[#1a2233] rounded-xl hover:bg-[#f8f9fa] dark:hover:bg-[#121724] transition-all cursor-pointer"
           >
-            ✕ 退出禅模式
+            {t('focus.exitZen')}
           </button>
         </div>
 
         <div className="text-center space-y-8 max-w-xl">
           <div className="text-xs font-bold tracking-widest uppercase text-slate-400 dark:text-slate-600">
-            {selectedTaskTitle} · {mode === 'stopwatch' ? '秒表专注' : '番茄倒计时'}
+            {selectedTaskTitle || t('focus.freeFocus')} · {mode === 'stopwatch' ? t('focus.stopwatch') : t('focus.pomodoro')}
           </div>
 
           <div className="py-4">
@@ -87,7 +89,7 @@ export default function FocusTimer({
                 onClick={handleStart}
                 className="px-10 py-3 rounded-2xl bg-[#0f2847] hover:bg-[#183a63] dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-sm tracking-wide shadow-md transition-all active:scale-95 cursor-pointer"
               >
-                开始专注
+                {t('focus.start')}
               </button>
             )}
 
@@ -97,13 +99,13 @@ export default function FocusTimer({
                   onClick={handlePause}
                   className="px-8 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
                 >
-                  暂停
+                  {t('focus.pause')}
                 </button>
                 <button
                   onClick={() => handleCompleteSession()}
                   className="px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
                 >
-                  完成
+                  {t('focus.complete')}
                 </button>
               </>
             )}
@@ -114,19 +116,19 @@ export default function FocusTimer({
                   onClick={handleResume}
                   className="px-8 py-3 rounded-2xl bg-[#0f2847] dark:bg-blue-600 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
                 >
-                  继续
+                  {t('focus.resume')}
                 </button>
                 <button
                   onClick={() => handleCompleteSession()}
                   className="px-8 py-3 rounded-2xl bg-emerald-600 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
                 >
-                  保存
+                  {t('common.save')}
                 </button>
                 <button
                   onClick={resetState}
                   className="px-4 py-3 text-slate-400 hover:text-rose-500 text-sm font-semibold cursor-pointer"
                 >
-                  放弃
+                  {t('focus.discard')}
                 </button>
               </>
             )}
@@ -143,10 +145,10 @@ export default function FocusTimer({
       <div className="flex items-center justify-between pb-3 border-b border-[#f1f3f5] dark:border-[#1a2233]">
         <div className="flex items-center space-x-3">
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            专注工作台
+            {t('focus.title')}
           </h1>
           <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-            屏蔽杂念 · 进入深度心流状态
+            {t('timeline.subtitle')}
           </span>
         </div>
 
@@ -155,27 +157,27 @@ export default function FocusTimer({
           {onEnterMiniMode && (
             <button
               onClick={onEnterMiniMode}
-              title="缩小为桌面置顶悬浮药丸 (画中画)"
+              title={t('focus.miniCapsule')}
               className="flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121724] border border-[#f1f3f5] dark:border-[#1a2233] hover:border-[#0f2847] dark:hover:border-blue-500 rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2" />
                 <rect x="11" y="11" width="8" height="6" rx="1" fill="currentColor" fillOpacity="0.4" strokeWidth="1.5" />
               </svg>
-              <span>悬浮药丸</span>
+              <span>{t('focus.miniCapsule')}</span>
             </button>
           )}
 
           {/* 全屏禅模式按钮 */}
           <button
             onClick={() => setIsZenMode(true)}
-            title="开启纯净全屏禅模式"
+            title={t('focus.zenMode')}
             className="flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold text-[#0f2847] dark:text-blue-400 bg-white dark:bg-[#121724] border border-[#f1f3f5] dark:border-[#1a2233] hover:border-[#0f2847] dark:hover:border-blue-500 rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
             </svg>
-            <span>全屏禅模式</span>
+            <span>{t('focus.zenMode')}</span>
           </button>
         </div>
       </div>
@@ -191,24 +193,24 @@ export default function FocusTimer({
             <button
               disabled={status !== 'idle'}
               onClick={() => setMode('stopwatch')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 mode === 'stopwatch'
-                  ? 'bg-white dark:bg-[#1e2638] text-[#0f2847] dark:text-blue-400 shadow-sm'
+                  ? 'bg-white dark:bg-[#1e2638] text-[#0f2847] dark:text-blue-400 shadow-xs'
                   : 'text-slate-400 hover:text-slate-700 dark:text-slate-500'
               }`}
             >
-              秒表专注
+              {t('focus.stopwatch')}
             </button>
             <button
               disabled={status !== 'idle'}
               onClick={() => setMode('pomodoro')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 mode === 'pomodoro'
-                  ? 'bg-white dark:bg-[#1e2638] text-[#0f2847] dark:text-blue-400 shadow-sm'
+                  ? 'bg-white dark:bg-[#1e2638] text-[#0f2847] dark:text-blue-400 shadow-xs'
                   : 'text-slate-400 hover:text-slate-700 dark:text-slate-500'
               }`}
             >
-              番茄倒计时
+              {t('focus.pomodoro')}
             </button>
           </div>
 
@@ -219,7 +221,7 @@ export default function FocusTimer({
                 <button
                   key={mins}
                   onClick={() => setCountdownMinutes(mins)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     countdownMinutes === mins
                       ? 'bg-[#0f2847] text-white dark:bg-blue-600 shadow-xs'
                       : 'text-slate-400 hover:text-slate-700 dark:text-slate-500 bg-[#f8f9fa] dark:bg-[#121724]'
@@ -240,7 +242,7 @@ export default function FocusTimer({
               className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] bg-[#fcfcfd] dark:bg-[#0c101a] text-xs text-slate-700 dark:text-slate-300 hover:border-[#e2e8f0] dark:hover:border-[#28354d] transition-all disabled:opacity-60 cursor-pointer"
             >
               <span className="truncate pr-2 font-medium">
-                🎯 {selectedTaskTitle}
+                🎯 {selectedTaskTitle || t('focus.freeFocus')}
               </span>
               <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isPickerOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -260,22 +262,22 @@ export default function FocusTimer({
                       : 'text-slate-700 dark:text-slate-300 hover:bg-[#f8f9fa] dark:hover:bg-[#161c2b]'
                   }`}
                 >
-                  自由专注
+                  {t('focus.freeFocus')}
                 </div>
-                {tasks.filter(t => !t.isCompleted).map(t => (
+                {tasks.filter(tItem => !tItem.isCompleted).map(tItem => (
                   <div
-                    key={t.id}
+                    key={tItem.id}
                     onClick={() => {
-                      setSelectedTaskId(t.id);
+                      setSelectedTaskId(tItem.id);
                       setIsPickerOpen(false);
                     }}
                     className={`px-3.5 py-2 rounded-lg text-xs cursor-pointer truncate transition-colors ${
-                      selectedTaskId === t.id
+                      selectedTaskId === tItem.id
                         ? 'bg-[#f8f9fa] dark:bg-[#1e2638] font-bold text-[#0f2847] dark:text-blue-400'
                         : 'text-slate-700 dark:text-slate-300 hover:bg-[#f8f9fa] dark:hover:bg-[#161c2b]'
                     }`}
                   >
-                    {t.title}
+                    {tItem.title}
                   </div>
                 ))}
               </div>
@@ -294,9 +296,9 @@ export default function FocusTimer({
             {status === 'idle' && (
               <button
                 onClick={handleStart}
-                className="px-10 py-2.5 rounded-xl bg-[#0f2847] hover:bg-[#183a63] dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-xs tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="px-10 py-2.5 rounded-xl bg-[#0f2847] hover:bg-[#183a63] dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-bold text-xs tracking-wider shadow-xs transition-all active:scale-95 cursor-pointer"
               >
-                开始专注
+                {t('focus.start')}
               </button>
             )}
 
@@ -306,13 +308,13 @@ export default function FocusTimer({
                   onClick={handlePause}
                   className="px-7 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-all active:scale-95 cursor-pointer"
                 >
-                  暂停
+                  {t('focus.pause')}
                 </button>
                 <button
                   onClick={() => handleCompleteSession()}
                   className="px-8 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all active:scale-95 cursor-pointer"
                 >
-                  完成
+                  {t('focus.complete')}
                 </button>
               </>
             )}
@@ -323,19 +325,19 @@ export default function FocusTimer({
                   onClick={handleResume}
                   className="px-7 py-2.5 rounded-xl bg-[#0f2847] dark:bg-blue-600 text-white font-bold text-xs transition-all active:scale-95 cursor-pointer"
                 >
-                  继续
+                  {t('focus.resume')}
                 </button>
                 <button
                   onClick={() => handleCompleteSession()}
                   className="px-7 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs transition-all active:scale-95 cursor-pointer"
                 >
-                  保存
+                  {t('common.save')}
                 </button>
                 <button
                   onClick={resetState}
                   className="px-4 py-2.5 text-slate-400 hover:text-rose-500 text-xs font-semibold cursor-pointer"
                 >
-                  放弃
+                  {t('focus.discard')}
                 </button>
               </>
             )}
@@ -350,10 +352,10 @@ export default function FocusTimer({
           <div className="paper-card rounded-2xl p-5 border border-[#f1f3f5] dark:border-[#1a2233] space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[#f1f3f5] dark:border-[#1a2233]">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                今日专注成就
+                {t('focus.todayTotal')}
               </span>
               <span className="text-[11px] text-slate-400 font-mono">
-                目标 2小时
+                {formatTimeDisplay(totalTodaySeconds)}
               </span>
             </div>
 
@@ -363,7 +365,7 @@ export default function FocusTimer({
                   {formatTimeDisplay(totalTodaySeconds)}
                 </div>
                 <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                  累计专注 · 共完成 {todaySessions.length} 次
+                  {t('focus.sessionsCount', { count: todaySessions.length })}
                 </div>
               </div>
 
@@ -386,12 +388,12 @@ export default function FocusTimer({
           {/* 卡片 2：今日心流时间线 Feed */}
           <div className="paper-card rounded-2xl p-5 border border-[#f1f3f5] dark:border-[#1a2233] space-y-3">
             <div className="text-xs font-bold text-slate-800 dark:text-slate-200 pb-2 border-b border-[#f1f3f5] dark:border-[#1a2233]">
-              心流轨迹
+              {t('focus.history')}
             </div>
 
             {todaySessions.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400 dark:text-slate-600">
-                今天还没有专注记录，点击左侧开始进入心流吧！
+                {t('focus.freeFocus')}
               </div>
             ) : (
               <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
@@ -408,7 +410,7 @@ export default function FocusTimer({
                           {completedTime}
                         </span>
                         <span className="truncate font-medium text-slate-800 dark:text-slate-200">
-                          {session.taskTitle || '自由专注'}
+                          {session.taskTitle || t('focus.freeFocus')}
                         </span>
                       </div>
 

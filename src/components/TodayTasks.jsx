@@ -9,6 +9,7 @@ import {
 } from '../utils/dateUtils.js';
 import QuickFocusWidget from './QuickFocusWidget.jsx';
 import QuickJournalWidget from './QuickJournalWidget.jsx';
+import { useLanguage } from '../locales/LanguageContext.jsx';
 
 export default function TodayTasks({
   tasks,
@@ -26,6 +27,7 @@ export default function TodayTasks({
   timer = null,
   onEnterMiniMode = null
 }) {
+  const { t } = useLanguage();
   const today = getTodayString();
   const [quickInput, setQuickInput] = useState('');
   const [deletingTaskId, setDeletingTaskId] = useState(null);
@@ -74,7 +76,7 @@ export default function TodayTasks({
             <div className="flex items-baseline justify-between">
               <div className="flex items-center space-x-2.5">
                 <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                  今日待办
+                  {t('today.title')}
                 </h1>
                 <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                   {today}
@@ -119,7 +121,7 @@ export default function TodayTasks({
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="快速记录想做的事... (按回车添加)"
+                placeholder={t('today.newPlaceholder')}
                 value={quickInput}
                 onChange={(e) => setQuickInput(e.target.value)}
                 className="w-full py-2.5 pr-4 bg-transparent text-slate-900 dark:text-slate-100 text-xs sm:text-sm outline-none placeholder:text-slate-400 cursor-text"
@@ -134,7 +136,7 @@ export default function TodayTasks({
             {activeMultiDayTasks.length > 0 && (
               <div className="space-y-1.5">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  长期推进
+                  {t('today.ongoing')}
                 </div>
                 <div className="space-y-1.5">
                   {activeMultiDayTasks.map(task => (
@@ -142,6 +144,7 @@ export default function TodayTasks({
                       key={task.id}
                       task={task}
                       today={today}
+                      t={t}
                       isDeleting={deletingTaskId === task.id}
                       onStartDelete={() => setDeletingTaskId(task.id)}
                       onCancelDelete={() => setDeletingTaskId(null)}
@@ -159,13 +162,13 @@ export default function TodayTasks({
             <div className="space-y-1.5">
               {activeSingleDayTasks.length > 0 && (
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  单日任务
+                  {t('today.singleDay')}
                 </div>
               )}
 
               {activeSingleDayTasks.length === 0 && activeMultiDayTasks.length === 0 ? (
                 <div className="py-12 text-center text-xs text-slate-300 dark:text-slate-600 paper-card rounded-2xl border border-dashed border-[#f1f3f5] dark:border-[#1a2233]">
-                  今日任务已全部搞定，享受此刻沉静
+                  {t('today.emptyActive')}
                 </div>
               ) : (
                 <div className="space-y-1.5">
@@ -174,6 +177,7 @@ export default function TodayTasks({
                       key={task.id}
                       task={task}
                       today={today}
+                      t={t}
                       isDeleting={deletingTaskId === task.id}
                       onStartDelete={() => setDeletingTaskId(task.id)}
                       onCancelDelete={() => setDeletingTaskId(null)}
@@ -193,12 +197,12 @@ export default function TodayTasks({
                 <button
                   type="button"
                   onClick={() => setShowFinished(!showFinished)}
-                  className="flex items-center space-x-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                  className="flex items-center space-x-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
                 >
                   <svg className={`w-3 h-3 transition-transform ${showFinished ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
-                  <span>已完成 ({finishedTasks.length})</span>
+                  <span>{t('today.completedCount', { count: finishedTasks.length })}</span>
                 </button>
 
                 {showFinished && (
@@ -208,6 +212,7 @@ export default function TodayTasks({
                         key={task.id}
                         task={task}
                         today={today}
+                        t={t}
                         isDeleting={deletingTaskId === task.id}
                         onStartDelete={() => setDeletingTaskId(task.id)}
                         onCancelDelete={() => setDeletingTaskId(null)}
@@ -258,6 +263,7 @@ export default function TodayTasks({
 function TaskCard({ 
   task, 
   today, 
+  t,
   isDeleting, 
   onStartDelete, 
   onCancelDelete, 
@@ -286,7 +292,7 @@ function TaskCard({
         <button
           type="button"
           onClick={() => onToggleComplete(task.id)}
-          className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors flex-shrink-0 border ${
+          className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors flex-shrink-0 border cursor-pointer ${
             task.isCompleted
               ? 'bg-[#0f2847] dark:bg-blue-600 border-[#0f2847] dark:border-blue-600 text-white'
               : 'border-slate-300 dark:border-slate-700 hover:border-[#0f2847]'
@@ -310,11 +316,11 @@ function TaskCard({
             {isMulti && (
               <span className="font-semibold text-[#0f2847] dark:text-blue-400">
                 {task.startDate.slice(5)}~{task.dueDate.slice(5)}
-                {remainingDays > 0 ? ` (剩${remainingDays}天)` : (remainingDays === 0 ? ' (今日截止)' : '')}
+                {remainingDays > 0 ? ` (${t('today.remaining', { days: remainingDays })})` : (remainingDays === 0 ? ` (${t('today.dueToday')})` : '')}
               </span>
             )}
             {!isMulti && task.dueDate === today && (
-              <span className="text-[#b47812] dark:text-amber-400 font-medium">今日截止</span>
+              <span className="text-[#b47812] dark:text-amber-400 font-medium">{t('today.dueToday')}</span>
             )}
             {task.estimatedMinutes && (
               <span>{task.estimatedMinutes}m</span>
@@ -330,16 +336,16 @@ function TaskCard({
             <button
               type="button"
               onClick={onConfirmDelete}
-              className="px-2 py-0.5 text-xs font-bold bg-rose-600 text-white rounded"
+              className="px-2 py-0.5 text-xs font-bold bg-rose-600 text-white rounded cursor-pointer"
             >
-              删除
+              {t('common.delete')}
             </button>
             <button
               type="button"
               onClick={onCancelDelete}
-              className="px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className="px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
             >
-              取消
+              {t('common.cancel')}
             </button>
           </div>
         ) : (
@@ -348,17 +354,17 @@ function TaskCard({
               <button
                 type="button"
                 onClick={() => onStartFocusOnTask(task)}
-                title="专注此任务"
-                className="px-2 py-0.5 text-xs font-semibold text-[#0f2847] dark:text-blue-400 hover:bg-[#f8f9fa] dark:hover:bg-[#182235] rounded transition-colors"
+                title={t('timeline.focusLabel')}
+                className="px-2 py-0.5 text-xs font-semibold text-[#0f2847] dark:text-blue-400 hover:bg-[#f8f9fa] dark:hover:bg-[#182235] rounded transition-colors cursor-pointer"
               >
-                专注
+                {t('timeline.focusLabel')}
               </button>
             )}
             <button
               type="button"
               onClick={() => onEditTask(task)}
-              title="编辑"
-              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded"
+              title={t('common.edit')}
+              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -367,8 +373,8 @@ function TaskCard({
             <button
               type="button"
               onClick={onStartDelete}
-              title="删除"
-              className="p-1 text-slate-400 hover:text-rose-500 rounded"
+              title={t('common.delete')}
+              className="p-1 text-slate-400 hover:text-rose-500 rounded cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

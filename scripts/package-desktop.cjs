@@ -31,23 +31,30 @@ if (!fs.existsSync(icoPath) && fs.existsSync(pngPath)) {
 
 // 3. Prepare release directory and copy Electron runtime
 console.log('\n[3/5] 正在装配独立 Electron 桌面执行环境...');
-if (fs.existsSync(releaseDir)) {
-  try {
-    fs.rmSync(releaseDir, { recursive: true, force: true });
-  } catch (err) {
-    console.warn('清理旧打包目录提示:', err.message);
-  }
-}
-fs.mkdirSync(releaseDir, { recursive: true });
-
-// Copy prebuilt runtime files
-fs.cpSync(electronDist, releaseDir, { recursive: true });
-
-// Rename electron.exe to doin.exe
 const oldExe = path.join(releaseDir, 'electron.exe');
 const newExe = path.join(releaseDir, 'doin.exe');
-if (fs.existsSync(oldExe)) {
-  fs.renameSync(oldExe, newExe);
+
+let needCopyRuntime = true;
+if (fs.existsSync(newExe)) {
+  try {
+    fs.rmSync(releaseDir, { recursive: true, force: true });
+    fs.mkdirSync(releaseDir, { recursive: true });
+  } catch (err) {
+    console.log('提示: 检测到旧 release 目录存在或 doin 正在运行，直接热更新应用代码与资源。');
+    needCopyRuntime = false;
+  }
+} else {
+  fs.mkdirSync(releaseDir, { recursive: true });
+}
+
+if (needCopyRuntime) {
+  // Copy prebuilt runtime files
+  fs.cpSync(electronDist, releaseDir, { recursive: true });
+
+  // Rename electron.exe to doin.exe
+  if (fs.existsSync(oldExe)) {
+    fs.renameSync(oldExe, newExe);
+  }
 }
 
 // 4. Bundle app code into resources/app
