@@ -11,7 +11,8 @@ import {
   isUnscheduledTask,
   isOverdueSingleDayTask,
   getWeekdayName,
-  getFriendlyDateLabel
+  getFriendlyDateLabel,
+  getPendingMultiDayTasks
 } from '../src/utils/dateUtils.js';
 
 test('dateUtils: 基础日期计算与格式化', () => {
@@ -23,6 +24,18 @@ test('dateUtils: 基础日期计算与格式化', () => {
 
   const threeDaysAgo = addDays(today, -3);
   assert.equal(diffInDays(threeDaysAgo, today), 3, '3天前与今天相差 3 天');
+});
+
+test('dateUtils: 手机规划清单保留所有未完成跨天任务并按截止日排序', () => {
+  const tasks = [
+    { id: 'far', startDate: '2026-10-03', dueDate: '2026-12-01', isCompleted: false },
+    { id: 'single', startDate: '2026-10-03', dueDate: '2026-10-03', isCompleted: false },
+    { id: 'past', startDate: '2026-09-01', dueDate: '2026-09-30', isCompleted: false },
+    { id: 'done', startDate: '2026-10-01', dueDate: '2026-10-10', isCompleted: true },
+    { id: 'near', startDate: '2026-10-01', dueDate: '2026-10-08', isCompleted: false }
+  ];
+  assert.deepEqual(getPendingMultiDayTasks(tasks).map(task => task.id), ['past', 'near', 'far']);
+  assert.deepEqual(tasks.map(task => task.id), ['far', 'single', 'past', 'done', 'near'], '不得改变原任务顺序');
 });
 
 test('dateUtils: 滚动 7 天窗口生成 (前2天到后4天)', () => {

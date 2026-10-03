@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { getTodayString } from '../utils/dateUtils.js';
 import { playChimeSound } from '../utils/timerEngine.js';
+import { App as CapacitorApp } from '@capacitor/app';
+import { isAndroidApp } from '../platform/platform.js';
 
 export function useTimerEngine({
   tasks = [],
@@ -65,6 +67,16 @@ export function useTimerEngine({
     };
   }, [status, mode, countdownMinutes]);
 
+  // 首版手机计时只保证前台。离开应用时暂停，避免把后台时长误记为专注。
+  useEffect(() => {
+    if (!isAndroidApp() || status !== 'running') return;
+    let listener;
+    CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) handlePause();
+    }).then(handle => { listener = handle; });
+    return () => { listener?.remove(); };
+  }, [status]);
+
   const handleStart = () => {
     startTimestampRef.current = Date.now();
     setStatus('running');
@@ -75,6 +87,7 @@ export function useTimerEngine({
       accumulatedMsRef.current += Date.now() - startTimestampRef.current;
       startTimestampRef.current = null;
     }
+    setElapsedMs(accumulatedMsRef.current);
     setStatus('paused');
   };
 
@@ -92,7 +105,7 @@ export function useTimerEngine({
   };
 
   const handleCompleteSession = (finalMs = null) => {
-    const totalMsToSave = finalMs !== null ? finalMs : elapsedMs;
+    const totalMsToSave = finalMs !== null ? finalMs : accumulatedMsRef.current + (status === 'running' && startTimestampRef.current ? Date.now() - startTimestampRef.current : 0);
     const durationSeconds = Math.max(1, Math.round(totalMsToSave / 1000));
     playChimeSound();
 
@@ -101,7 +114,7 @@ export function useTimerEngine({
     if (onSaveFocusSession) {
       onSaveFocusSession({
         id: `session-${Date.now()}`,
-        date: today,
+        date: getTodayString(),
         durationSeconds,
         mode,
         taskId: selectedTaskId || null,

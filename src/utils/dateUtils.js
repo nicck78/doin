@@ -96,6 +96,13 @@ export function isOverdueSingleDayTask(task, referenceDate = getTodayString()) {
   return taskDate < referenceDate;
 }
 
+// 手机规划清单要包含所有未完成的跨天任务，包括已逾期和超过当前 7 天窗口的任务。
+export function getPendingMultiDayTasks(tasks) {
+  return tasks
+    .filter(task => isMultiDayTask(task) && !task.isCompleted)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.startDate.localeCompare(b.startDate));
+}
+
 // 预设高颜值、现代、区分度高的色彩池（兼顾 Light 和 Dark 模式）
 export const TASK_COLOR_PALETTE = [
   { id: 'indigo', name: '极光蓝', bg: 'bg-indigo-500', text: 'text-white', hex: '#6366f1', lightBg: '#e0e7ff', darkBg: '#312e81', border: '#818cf8' },

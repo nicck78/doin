@@ -20,10 +20,10 @@ export default function Navbar({
 
   return (
     <header className="sticky top-0 z-30 border-b border-[#f1f3f5] dark:border-[#1a2233] bg-white/95 dark:bg-[#0a0d14]/95 backdrop-blur-md py-2.5 transition-colors">
-      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap gap-2 items-center justify-between">
         
         {/* 左侧：IP 标识与极简导航 */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-2 sm:space-x-6">
           <div 
             className="flex items-center space-x-2.5 cursor-pointer group" 
             onClick={() => setCurrentView('today')}
@@ -33,7 +33,7 @@ export default function Navbar({
               alt="doin logo" 
               className="w-7 h-7 rounded-lg object-cover shadow-sm ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-105 transition-transform" 
             />
-            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            <span className="hidden sm:inline text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
               doin
             </span>
           </div>
@@ -46,7 +46,7 @@ export default function Navbar({
                 <button
                   key={item.id}
                   onClick={() => setCurrentView(item.id)}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-2 sm:px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                     active
                       ? 'bg-white dark:bg-[#1e2638] text-[#0f2847] dark:text-blue-400 shadow-sm'
                       : 'text-slate-400 hover:text-slate-800 dark:text-slate-500 dark:hover:text-white'
@@ -65,7 +65,7 @@ export default function Navbar({
           <button
             onClick={() => onOpenReviewModal(new Date().toISOString().slice(0, 10))}
             title={t('modal.journalTitle')}
-            className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#fef8ed] dark:bg-[#e5a024]/10 text-[#b47812] dark:text-[#f59e0b] hover:bg-[#fdf2dc] dark:hover:bg-[#e5a024]/20 transition-all border border-[#fbe8c7] dark:border-[#e5a024]/20 cursor-pointer"
+            className="hidden sm:inline-flex px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#fef8ed] dark:bg-[#e5a024]/10 text-[#b47812] dark:text-[#f59e0b] hover:bg-[#fdf2dc] dark:hover:bg-[#e5a024]/20 transition-all border border-[#fbe8c7] dark:border-[#e5a024]/20 cursor-pointer"
           >
             {t('modal.journalTitle')}
           </button>

@@ -117,6 +117,33 @@ ipcMain.handle('storage:import-backup', async () => {
   }
 });
 
+const recoveryDir = () => path.join(app.getPath('userData'), 'doin-recovery');
+const recoveryPath = (name) => {
+  if (!/^doin-recovery-[\w-]+\.json$/.test(name)) throw new Error('恢复文件名不正确');
+  return path.join(recoveryDir(), name);
+};
+
+ipcMain.handle('storage:save-recovery', async (_, data, name) => {
+  try {
+    fs.mkdirSync(recoveryDir(), { recursive: true });
+    const filePath = recoveryPath(name);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), { encoding: 'utf-8', flag: 'wx' });
+    return { success: true, filePath, name };
+  } catch (err) { return { success: false, error: err.message }; }
+});
+
+ipcMain.handle('storage:list-recoveries', async () => {
+  try {
+    if (!fs.existsSync(recoveryDir())) return [];
+    return fs.readdirSync(recoveryDir()).filter(name => /^doin-recovery-[\w-]+\.json$/.test(name)).sort().reverse();
+  } catch (err) { return []; }
+});
+
+ipcMain.handle('storage:load-recovery', async (_, name) => {
+  try { return { success: true, data: JSON.parse(fs.readFileSync(recoveryPath(name), 'utf-8')) }; }
+  catch (err) { return { success: false, error: err.message }; }
+});
+
 // IPC: Toggle Mini Capsule Mode (Picture-in-Picture)
 ipcMain.handle('window:set-mini-mode', async (_, isMini) => {
   if (!mainWindow) return { success: false };

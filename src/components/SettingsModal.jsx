@@ -7,7 +7,8 @@ export default function SettingsModal({
   theme,
   onThemeChange,
   onExportBackup,
-  onImportBackup
+  onImportBackup,
+  onShowRecoveries
 }) {
   const { lang, setLang, t } = useLanguage();
 
@@ -16,7 +17,7 @@ export default function SettingsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-soft">
       <div 
-        className="w-full max-w-md bg-white dark:bg-[#10141e] rounded-2xl shadow-2xl border border-[#f1f3f5] dark:border-[#1a2233] p-6 space-y-6"
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#10141e] rounded-2xl shadow-2xl border border-[#f1f3f5] dark:border-[#1a2233] p-6 space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 头部标题与关闭 */}
@@ -144,6 +145,7 @@ export default function SettingsModal({
               <span>{t('nav.import')}</span>
             </button>
           </div>
+          <button type="button" onClick={onShowRecoveries} className="w-full py-2 text-xs rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Restore pre-import data' : '恢复导入前数据'}</button>
         </div>
 
         {/* 4. 关于 doin */}

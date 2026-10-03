@@ -64,7 +64,7 @@ export default function TodayTasks({
   const finishedTasks = todayTasks.filter(t => t.isCompleted);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-6 animate-soft">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-6 animate-soft">
       {/* 现代双栏工作台网格：左 7 列聚焦待办，右 5 列常驻效率伴侣 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
         
@@ -292,7 +292,7 @@ function TaskCard({
         <button
           type="button"
           onClick={() => onToggleComplete(task.id)}
-          className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors flex-shrink-0 border cursor-pointer ${
+          className={`w-6 h-6 sm:w-3.5 sm:h-3.5 rounded flex items-center justify-center transition-colors flex-shrink-0 border cursor-pointer ${
             task.isCompleted
               ? 'bg-[#0f2847] dark:bg-blue-600 border-[#0f2847] dark:border-blue-600 text-white'
               : 'border-slate-300 dark:border-slate-700 hover:border-[#0f2847]'
@@ -349,7 +349,7 @@ function TaskCard({
             </button>
           </div>
         ) : (
-          <div className="flex items-center space-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center space-x-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             {!task.isCompleted && (
               <button
                 type="button"

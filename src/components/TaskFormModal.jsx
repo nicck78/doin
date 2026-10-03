@@ -62,7 +62,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, taskToEdit }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-soft">
       <div 
-        className="w-full max-w-md bg-white dark:bg-[#10141e] rounded-2xl shadow-xl border border-[#f1f3f5] dark:border-[#1a2233] p-6"
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#10141e] rounded-2xl shadow-xl border border-[#f1f3f5] dark:border-[#1a2233] p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between pb-3 border-b border-[#f1f3f5] dark:border-[#1a2233]">
