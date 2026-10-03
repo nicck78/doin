@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 深度对齐 Antigravity 极致纯白与纯黑美学，融合个人专属 IP 藏青与暖金色系 */
+/* 页面颜色与品牌色 */
 :root {
   --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
@@ -39,14 +39,14 @@ body {
   letter-spacing: -0.012em;
 }
 
-/* 保证输入框无论何时都具备打字光标和文本可选性 */
+/* 输入内容可选择和编辑 */
 input, textarea, [contenteditable="true"] {
   user-select: text !important;
   -webkit-user-select: text !important;
   cursor: text !important;
 }
 
-/* 极致克制的发丝级滚动条 */
+/* 滚动条 */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -69,7 +69,7 @@ input, textarea, [contenteditable="true"] {
   font-variant-numeric: tabular-nums;
 }
 
-/* 极简淡入微动效 */
+/* 淡入动效 */
 @keyframes softFade {
   from { opacity: 0; transform: translateY(2px); }
   to { opacity: 1; transform: translateY(0); }

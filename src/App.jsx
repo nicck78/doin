@@ -14,6 +14,7 @@ import { LanguageProvider } from './locales/LanguageContext.jsx';
 import { backupSummary, validateBackup } from './storage/backupData.js';
 import { isAndroidApp } from './platform/platform.js';
 import MobileCalendar from './components/MobileCalendar.jsx';
+import { localizeBackupError } from './locales/backupErrors.js';
 
 export default function App() {
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -236,9 +237,9 @@ export default function App() {
     try { res = await storageManager.exportBackup(currentData); }
     catch (error) { res = { success: false, error: String(error) }; }
     if (res.success) {
-      alert(res.note || (lang === 'en' ? 'Backup exported.' : '备份已导出，请核对文件确实保存在所选位置。'));
+      alert(res.note || ui('备份已导出，请核对文件保存在所选位置。', 'Backup exported. Check that the file is in the chosen location.'));
     } else if (!res.canceled) {
-      alert(`导出失败：${res.error || '未知错误'}`);
+      alert(`${ui('导出失败', 'Export failed')}: ${res.error || ui('未知错误', 'Unknown error')}`);
     }
   };
 
@@ -247,7 +248,7 @@ export default function App() {
     const res = await storageManager.importBackup();
     if (res.success && res.data) {
       try { setPendingImport(validateBackup(res.data)); }
-      catch (error) { alert(`${ui('备份无效', 'Invalid backup')}: ${error.message}`); }
+      catch (error) { alert(`${ui('备份无效', 'Invalid backup')}: ${localizeBackupError(error.message, lang)}`); }
     } else if (!res.canceled) alert(`${ui('读取备份失败', 'Cannot read backup')}: ${res.error || ui('未知错误', 'Unknown error')}`);
   };
 
@@ -269,7 +270,7 @@ export default function App() {
       await replaceWith(pendingImport);
       setPendingImport(null);
       alert(ui(`导入完成。导入前数据已保存为 ${recovery.name}，可在设置中恢复。`, `Import complete. Pre-import data was saved as ${recovery.name} and can be restored from Settings.`));
-    } catch (error) { alert(`${ui('导入已停止', 'Import stopped')}: ${error.message}`); }
+    } catch (error) { alert(`${ui('导入已停止', 'Import stopped')}: ${localizeBackupError(error.message, lang)}`); }
   };
 
   const showRecoveries = async () => {
@@ -280,18 +281,18 @@ export default function App() {
   };
   const restoreRecovery = async (name) => {
     const result = await storageManager.loadRecovery(name);
-    if (!result.success) { alert(`读取恢复文件失败：${result.error}`); return; }
+    if (!result.success) { alert(`${ui('读取恢复文件失败', 'Cannot read recovery file')}: ${localizeBackupError(result.error, lang)}`); return; }
     try { setPendingImport(validateBackup(result.data)); setRecoveries([]); }
-    catch (error) { alert(`恢复文件无效：${error.message}`); }
+    catch (error) { alert(`${ui('恢复文件无效', 'Invalid recovery file')}: ${localizeBackupError(error.message, lang)}`); }
   };
 
-  if (loadError) return <div className="p-6">读取本地数据失败，已停止启动以避免覆盖原数据：{loadError}</div>;
+  if (loadError) return <div className="p-6">{ui('读取本地数据失败。已停止启动，以免覆盖原数据', 'Could not read local data. Startup stopped to avoid overwriting it')}: {loadError}</div>;
   if (!dataLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b0f19] text-white">
         <div className="flex items-center space-x-3">
           <span className="w-3 h-3 rounded-full bg-blue-500 animate-ping"></span>
-          <span className="text-xs font-semibold tracking-wider text-slate-400">正在启动 doin...</span>
+          <span className="text-xs font-semibold tracking-wider text-slate-400">{ui('正在启动 doin…', 'Starting doin…')}</span>
         </div>
       </div>
     );
@@ -402,6 +403,7 @@ export default function App() {
               todaySessions={todaySessions}
               timer={globalTimer}
               onEnterMiniMode={isAndroidApp() ? null : handleEnterMiniMode}
+              isMobileApp={isAndroidApp()}
             />
           )}
         </main>
@@ -419,7 +421,7 @@ export default function App() {
 
         {recoveries.length > 0 && <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="bg-white dark:bg-[#10141e] rounded-xl p-5 max-w-md w-full max-h-[80vh] overflow-auto space-y-3"><h2 className="font-bold">{ui('导入前恢复文件', 'Pre-import recovery files')}</h2><p className="text-sm">{ui('选择后还会显示内容摘要，并再次创建当前数据的恢复文件。', 'Select a file to preview its summary. A new recovery file will be created before replacing current data.')}</p>{recoveries.map(name => <button key={name} className="block w-full text-left text-xs break-all p-2 border rounded" onClick={() => restoreRecovery(name)}>{name}</button>)}<button onClick={() => setRecoveries([])}>{ui('关闭', 'Close')}</button></div></div>}
 
-        {pendingImport && <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="bg-white dark:bg-[#10141e] rounded-xl p-5 max-w-md w-full space-y-4"><h2 className="font-bold">{ui('确认整体导入', 'Confirm replacement')}</h2><p className="text-sm">{ui('当前', 'Current')}: {ui('任务', 'tasks')} {tasks.length}、{ui('专注', 'sessions')} {focusSessions.length}、{ui('日志', 'reviews')} {Object.keys(dailyReviews).length}。</p><p className="text-sm">{ui('来源', 'Source')}: {ui('任务', 'tasks')} {backupSummary(pendingImport).tasks}、{ui('专注', 'sessions')} {backupSummary(pendingImport).sessions}、{ui('日志', 'reviews')} {backupSummary(pendingImport).reviews}。</p><p className="text-xs text-slate-400">{ui('备份时间', 'Backup time')}: {pendingImport.exportedAt || ui('未记录', 'Unknown')}</p><p className="text-sm text-rose-600">{ui('确认后，当前内容会被来源内容整体替换；两端新增的数据不会自动合并。导入前会自动保存当前端恢复文件，失败则停止。', 'The source will replace all current data. Changes on both devices will not merge. Current data will be saved as a recovery file first; import stops if that fails.')}</p><div className="flex gap-3"><button className="px-4 py-2 border rounded" onClick={() => setPendingImport(null)}>{ui('取消', 'Cancel')}</button><button className="px-4 py-2 bg-rose-600 text-white rounded" onClick={confirmImport}>{ui('确认替换', 'Replace data')}</button></div></div></div>}
+        {pendingImport && <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"><div className="bg-white dark:bg-[#10141e] rounded-xl p-5 max-w-md w-full space-y-4"><h2 className="font-bold">{ui('确认替换', 'Replace data')}</h2><p className="text-sm">{ui('当前', 'Current')}: {ui(`任务 ${tasks.length} · 专注 ${focusSessions.length} · 日志 ${Object.keys(dailyReviews).length}`, `Tasks ${tasks.length} · Sessions ${focusSessions.length} · Notes ${Object.keys(dailyReviews).length}`)}</p><p className="text-sm">{ui('来源', 'Source')}: {ui(`任务 ${backupSummary(pendingImport).tasks} · 专注 ${backupSummary(pendingImport).sessions} · 日志 ${backupSummary(pendingImport).reviews}`, `Tasks ${backupSummary(pendingImport).tasks} · Sessions ${backupSummary(pendingImport).sessions} · Notes ${backupSummary(pendingImport).reviews}`)}</p><p className="text-xs text-slate-400">{ui('备份时间', 'Backup time')}: {pendingImport.exportedAt || ui('未记录', 'Unknown')}</p><p className="text-sm text-rose-600">{ui('确认后，当前内容会被来源内容整体替换；两端新增的数据不会自动合并。导入前会自动保存当前端恢复文件，失败则停止。', 'The source will replace all current data. Changes on both devices will not merge. Current data will be saved as a recovery file first; import stops if that fails.')}</p><div className="flex gap-3"><button className="px-4 py-2 border rounded" onClick={() => setPendingImport(null)}>{ui('取消', 'Cancel')}</button><button className="px-4 py-2 bg-rose-600 text-white rounded" onClick={confirmImport}>{ui('确认替换', 'Replace data')}</button></div></div></div>}
 
         {/* 任务弹窗 */}
         <TaskFormModal

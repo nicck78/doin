@@ -8,11 +8,11 @@ export function getDefaultInitialData() {
 
   return {
     version: '1.0.0',
-    theme: 'dark', // 默认暗色模式，极具现代感
+    theme: 'dark', // 首次运行默认深色主题
     tasks: [
       {
         id: 'task-initial-1',
-        title: '整理公众号第二篇：开发实验记录素材',
+        title: '示例：准备课程报告',
         estimatedMinutes: 60,
         startDate: yesterday,
         dueDate: twoDaysLater,
@@ -23,7 +23,7 @@ export function getDefaultInitialData() {
       },
       {
         id: 'task-initial-2',
-        title: '测试 doin 桌面应用的专注计时功能',
+        title: '示例：阅读资料',
         estimatedMinutes: 25,
         startDate: today,
         dueDate: today,
@@ -34,7 +34,7 @@ export function getDefaultInitialData() {
       },
       {
         id: 'task-initial-3',
-        title: '制定大学本学期自学 AI 的每周小目标',
+        title: '示例：整理学习计划',
         estimatedMinutes: 45,
         startDate: today,
         dueDate: threeDaysLater,
@@ -45,7 +45,7 @@ export function getDefaultInitialData() {
       },
       {
         id: 'task-initial-4',
-        title: '完成 doin 第一阶段实施计划评审',
+        title: '示例：记录今日安排',
         estimatedMinutes: 15,
         startDate: today,
         dueDate: today,
@@ -61,14 +61,14 @@ export function getDefaultInitialData() {
         date: today,
         durationSeconds: 1500, // 25 分钟
         mode: 'stopwatch',
-        taskTitle: '完成 doin 第一阶段实施计划评审',
+        taskTitle: '示例：记录今日安排',
         completedAt: new Date().toISOString()
       }
     ],
     dailyReviews: {
       [today]: {
-        summary: '今天与 AI 紧密配合，完成了 doin 软件的架构设计与环境准备。',
-        reflection: '和 AI 沟通时提出具体边界比笼统描述更有效。多天任务甘特视图很期待！',
+        summary: '示例日志：这里可以记录今天做过的事。',
+        reflection: '这是一条演示内容，不代表用户的真实经历。',
         updatedAt: new Date().toISOString()
       }
     }

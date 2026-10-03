@@ -78,8 +78,9 @@ export const storageManager = {
       const path = `doin-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
       try {
         const result = await Filesystem.writeFile({ path, data: JSON.stringify(data, null, 2), directory: Directory.Cache, encoding: Encoding.UTF8 });
-        await Share.share({ title: '保存 doin 备份', url: result.uri, dialogTitle: '选择保存位置' });
-        return { success: true, note: '请确认文件已在所选位置保存；分享操作本身不能证明对方已接收。' };
+        const english = data.lang === 'en';
+        await Share.share({ title: english ? 'Save doin backup' : '保存 doin 备份', url: result.uri, dialogTitle: english ? 'Choose where to save' : '选择保存位置' });
+        return { success: true, note: english ? 'Check that the file was saved in the chosen location. Opening the share sheet alone does not save it.' : '请确认文件已在所选位置保存；仅打开分享菜单并不等于保存。' };
       } catch (error) {
         return { success: false, error: String(error) };
       }

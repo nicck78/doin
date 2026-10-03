@@ -39,7 +39,7 @@ export function useTimerEngine({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 防休眠时间戳差值算法引擎
+  // 前台计时按时间戳计算，减少定时器节流造成的误差。
   useEffect(() => {
     if (status === 'running') {
       intervalIdRef.current = setInterval(() => {
@@ -118,7 +118,7 @@ export function useTimerEngine({
         durationSeconds,
         mode,
         taskId: selectedTaskId || null,
-        taskTitle: matchedTask ? matchedTask.title : '自由专注',
+        taskTitle: matchedTask ? matchedTask.title : '',
         completedAt: new Date().toISOString()
       });
     }
@@ -136,7 +136,7 @@ export function useTimerEngine({
   }
 
   const selectedTaskObj = tasks.find(t => t.id === selectedTaskId);
-  const selectedTaskTitle = selectedTaskObj ? selectedTaskObj.title : '自由专注';
+  const selectedTaskTitle = selectedTaskObj ? selectedTaskObj.title : '';
 
   return {
     mode,

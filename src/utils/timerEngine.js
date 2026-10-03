@@ -1,6 +1,6 @@
 /**
- * 专注计时精确引擎 (timerEngine.js)
- * 采用绝对时间戳比对算法，杜绝锁屏/休眠/后台节流导致的计时变慢问题
+ * 前台专注计时：用时间戳计算时长，减少定时器节流的影响。
+ * 手机进入后台时由 useTimerEngine 暂停；这里不提供后台计时保证。
  */
 
 // 格式化秒数为 MM:SS 或 HH:MM:SS
@@ -19,7 +19,7 @@ export function formatTimeDisplay(totalSeconds) {
   return `${mm}:${ss}`;
 }
 
-// 基于 Web Audio API 的轻量悦耳完成提示音（无需加载外部 mp3，纯本地零依赖）
+// 使用 Web Audio API 播放完成提示音。
 export function playChimeSound() {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -28,7 +28,7 @@ export function playChimeSound() {
 
     const now = ctx.currentTime;
     
-    // 简短优美的双音节（类似苹果钟声/禅钟）
+    // 依次播放三个短音。
     const playNote = (freq, start, duration) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();

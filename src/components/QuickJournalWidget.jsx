@@ -91,7 +91,7 @@ export default function QuickJournalWidget({
         </button>
       </div>
 
-      {/* 当日事实微型数据条 */}
+      {/* 当天任务与专注摘要 */}
       <div className="my-2.5 px-3 py-1 rounded-lg bg-[#fcfcfd] dark:bg-[#0c101a] border border-[#f1f3f5] dark:border-[#1a2233] flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
         <span>{t('journal.doneRatio', { done: completedTasks.length, total: dayTasks.length })}</span>
         <span className="font-timer">

@@ -1,6 +1,5 @@
 /**
- * 日期与时间轴工具库 (dateUtils.js)
- * 纯原生 JS 实现，零多余依赖
+ * 日期与时间轴共用规则。
  */
 export { formatTimeDisplay } from './timerEngine.js';
 
@@ -25,7 +24,7 @@ export function addDays(dateStr, days) {
   return formatDate(d);
 }
 
-// 计算两日期间隔天数 (正整数)
+// 计算两日期间隔天数；日期倒序时结果为负数。
 export function diffInDays(startStr, endStr) {
   if (!startStr || !endStr) return 0;
   const s = new Date(startStr + 'T00:00:00');
@@ -96,21 +95,21 @@ export function isOverdueSingleDayTask(task, referenceDate = getTodayString()) {
   return taskDate < referenceDate;
 }
 
-// 手机规划清单要包含所有未完成的跨天任务，包括已逾期和超过当前 7 天窗口的任务。
+// 返回全部未完成跨天任务，包括七天窗口外的任务。
 export function getPendingMultiDayTasks(tasks) {
   return tasks
     .filter(task => isMultiDayTask(task) && !task.isCompleted)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.startDate.localeCompare(b.startDate));
 }
 
-// 预设高颜值、现代、区分度高的色彩池（兼顾 Light 和 Dark 模式）
+// 任务颜色在浅色和深色主题中共用。
 export const TASK_COLOR_PALETTE = [
-  { id: 'indigo', name: '极光蓝', bg: 'bg-indigo-500', text: 'text-white', hex: '#6366f1', lightBg: '#e0e7ff', darkBg: '#312e81', border: '#818cf8' },
-  { id: 'emerald', name: '薄荷绿', bg: 'bg-emerald-500', text: 'text-white', hex: '#10b981', lightBg: '#d1fae5', darkBg: '#064e3b', border: '#34d399' },
-  { id: 'amber', name: '晨曦橙', bg: 'bg-amber-500', text: 'text-white', hex: '#f59e0b', lightBg: '#fef3c7', darkBg: '#78350f', border: '#fbbf24' },
-  { id: 'rose', name: '珊瑚粉', bg: 'bg-rose-500', text: 'text-white', hex: '#f43f5e', lightBg: '#ffe4e6', darkBg: '#881337', border: '#fb7185' },
-  { id: 'violet', name: '星空紫', bg: 'bg-violet-500', text: 'text-white', hex: '#8b5cf6', lightBg: '#ede9fe', darkBg: '#4c1d95', border: '#a78bfa' },
-  { id: 'cyan', name: '青空蓝', bg: 'bg-cyan-500', text: 'text-white', hex: '#06b6d4', lightBg: '#cffafe', darkBg: '#164e63', border: '#22d3ee' }
+  { id: 'indigo', name: '蓝色', bg: 'bg-indigo-500', text: 'text-white', hex: '#6366f1', lightBg: '#e0e7ff', darkBg: '#312e81', border: '#818cf8' },
+  { id: 'emerald', name: '绿色', bg: 'bg-emerald-500', text: 'text-white', hex: '#10b981', lightBg: '#d1fae5', darkBg: '#064e3b', border: '#34d399' },
+  { id: 'amber', name: '橙色', bg: 'bg-amber-500', text: 'text-white', hex: '#f59e0b', lightBg: '#fef3c7', darkBg: '#78350f', border: '#fbbf24' },
+  { id: 'rose', name: '粉色', bg: 'bg-rose-500', text: 'text-white', hex: '#f43f5e', lightBg: '#ffe4e6', darkBg: '#881337', border: '#fb7185' },
+  { id: 'violet', name: '紫色', bg: 'bg-violet-500', text: 'text-white', hex: '#8b5cf6', lightBg: '#ede9fe', darkBg: '#4c1d95', border: '#a78bfa' },
+  { id: 'cyan', name: '青色', bg: 'bg-cyan-500', text: 'text-white', hex: '#06b6d4', lightBg: '#cffafe', darkBg: '#164e63', border: '#22d3ee' }
 ];
 
 export function getColorById(colorId) {

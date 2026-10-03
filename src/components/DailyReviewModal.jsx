@@ -67,7 +67,7 @@ export default function DailyReviewModal({
           </button>
         </div>
 
-        {/* 当日事实 */}
+        {/* 当天任务与专注摘要 */}
         <div className="my-3 px-3 py-1.5 rounded-lg bg-[#fcfcfd] dark:bg-[#0a0d14] border border-[#f1f3f5] dark:border-[#1a2233] flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
           <span>{t('journal.doneRatio', { done: completedTasks.length, total: dayTasks.length })}</span>
           {totalFocusSeconds > 0 && (

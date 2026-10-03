@@ -65,13 +65,13 @@ export default function TodayTasks({
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-6 animate-soft">
-      {/* 现代双栏工作台网格：左 7 列聚焦待办，右 5 列常驻效率伴侣 */}
+      {/* 宽屏双栏：待办和专注/日志 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
         
-        {/* ===================== 左主栏：今日待办流 (约 60%) ===================== */}
+        {/* 今日待办 */}
         <div className="lg:col-span-7 space-y-5">
           
-          {/* 标头与微进度条 */}
+          {/* 标题与进度 */}
           <div className="space-y-2 pb-2 border-b border-[#f1f3f5] dark:border-[#1a2233]">
             <div className="flex items-baseline justify-between">
               <div className="flex items-center space-x-2.5">
@@ -98,7 +98,7 @@ export default function TodayTasks({
               </div>
             </div>
 
-            {/* 极细微进度线 */}
+            {/* 完成进度 */}
             <div className="w-full bg-[#f1f3f5] dark:bg-[#161c2b] h-0.5 rounded-full overflow-hidden">
               <div 
                 className="bg-[#0f2847] dark:bg-blue-500 h-full rounded-full transition-all duration-300"
@@ -107,7 +107,7 @@ export default function TodayTasks({
             </div>
           </div>
 
-          {/* 极简快速录入输入框 */}
+          {/* 快速添加 */}
           <form onSubmit={handleQuickSubmit} className="relative">
             <div 
               onClick={() => inputRef.current?.focus()}
@@ -231,7 +231,7 @@ export default function TodayTasks({
 
         </div>
 
-        {/* ===================== 右副栏：常驻效率伴侣 (约 40%) ===================== */}
+        {/* 专注与日志 */}
         <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-20">
           
           {/* 上半部：极简专注时钟 */}

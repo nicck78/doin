@@ -113,6 +113,7 @@ export default function TaskFormModal({ isOpen, onClose, onSave, taskToEdit }) {
                   <button
                     key={c.id}
                     type="button"
+                    aria-label={t(`color.${c.id}`)}
                     onClick={() => setColor(c.id)}
                     className={`w-5 h-5 rounded-full transition-all flex items-center justify-center cursor-pointer ${
                       color === c.id ? 'ring-2 ring-offset-1 ring-[#0f2847] scale-110' : 'opacity-65 hover:opacity-100'

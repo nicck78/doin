@@ -145,7 +145,7 @@ export default function SettingsModal({
               <span>{t('nav.import')}</span>
             </button>
           </div>
-          <button type="button" onClick={onShowRecoveries} className="w-full py-2 text-xs rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] text-slate-600 dark:text-slate-300">{lang === 'en' ? 'Restore pre-import data' : '恢复导入前数据'}</button>
+          <button type="button" onClick={onShowRecoveries} className="w-full py-2 text-xs rounded-xl border border-[#f1f3f5] dark:border-[#1a2233] text-slate-600 dark:text-slate-300">{t('nav.restorePreImport')}</button>
         </div>
 
         {/* 4. 关于 doin */}

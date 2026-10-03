@@ -118,7 +118,7 @@ export default function QuickFocusWidget({
         </span>
       </div>
 
-      {/* 定制任务下拉选择（彻底告别系统丑陋灰框） */}
+      {/* 关联任务选择 */}
       <div className="relative mb-4" ref={pickerRef}>
         <button
           type="button"

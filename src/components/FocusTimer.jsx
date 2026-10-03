@@ -9,7 +9,8 @@ export default function FocusTimer({
   onSaveFocusSession,
   todaySessions = [],
   timer: externalTimer,
-  onEnterMiniMode
+  onEnterMiniMode,
+  isMobileApp = false
 }) {
   const { t } = useLanguage();
   const fallbackTimer = useTimerEngine({ tasks, initialTask, onSaveFocusSession });
@@ -38,12 +39,12 @@ export default function FocusTimer({
   const [isZenMode, setIsZenMode] = useState(false);
 
   const totalTodaySeconds = todaySessions.reduce((sum, s) => sum + (s.durationSeconds || 0), 0);
-  const dailyGoalMinutes = 120; // 默认每日专注目标 2 小时
+  const dailyGoalMinutes = 120; // 固定展示目标：120 分钟
   const currentTotalMinutes = Math.round(totalTodaySeconds / 60);
   const goalPercent = Math.min(100, Math.round((currentTotalMinutes / dailyGoalMinutes) * 100));
 
-  // 纯净禅模式全屏展示
-  if (isZenMode) {
+  // 桌面简洁计时视图
+  if (!isMobileApp && isZenMode) {
     return (
       <div className="fixed inset-0 z-50 bg-white dark:bg-[#070a11] flex flex-col items-center justify-center p-8 animate-soft">
         <div className="absolute top-6 right-6 flex items-center space-x-2">
@@ -141,15 +142,12 @@ export default function FocusTimer({
   return (
     <div className="max-w-6xl mx-auto px-6 py-6 space-y-6 animate-soft">
       
-      {/* 顶部标头与禅模式 / 悬浮胶囊开关 */}
+      {/* 标题与桌面窗口操作 */}
       <div className="flex items-center justify-between pb-3 border-b border-[#f1f3f5] dark:border-[#1a2233]">
         <div className="flex items-center space-x-3">
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             {t('focus.title')}
           </h1>
-          <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-            {t('timeline.subtitle')}
-          </span>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -168,8 +166,8 @@ export default function FocusTimer({
             </button>
           )}
 
-          {/* 全屏禅模式按钮 */}
-          <button
+          {/* 桌面简洁视图按钮 */}
+          {!isMobileApp && <button
             onClick={() => setIsZenMode(true)}
             title={t('focus.zenMode')}
             className="flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold text-[#0f2847] dark:text-blue-400 bg-white dark:bg-[#121724] border border-[#f1f3f5] dark:border-[#1a2233] hover:border-[#0f2847] dark:hover:border-blue-500 rounded-xl shadow-xs transition-all cursor-pointer"
@@ -178,15 +176,15 @@ export default function FocusTimer({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
             </svg>
             <span>{t('focus.zenMode')}</span>
-          </button>
+          </button>}
         </div>
       </div>
 
-      {/* 核心双栏架构：左侧 7 栏沉浸时钟，右侧 5 栏成就统计与时间轴 */}
+      {/* 宽屏双栏：计时与当天记录 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
         
-        {/* ===================== 左主栏：心流专注大核 (7列) ===================== */}
-        <div className="lg:col-span-7 paper-card rounded-2xl p-8 sm:p-10 border border-[#f1f3f5] dark:border-[#1a2233] text-center space-y-6">
+        {/* 计时 */}
+        <div className="lg:col-span-7 paper-card rounded-2xl p-5 sm:p-10 border border-[#f1f3f5] dark:border-[#1a2233] text-center space-y-6">
           
           {/* 模式选择 */}
           <div className="inline-flex items-center p-0.5 rounded-xl bg-[#f8f9fa] dark:bg-[#0a0d14] border border-[#f1f3f5] dark:border-[#1a2233]">
@@ -286,7 +284,7 @@ export default function FocusTimer({
 
           {/* 巨幅等宽数字时钟 */}
           <div className="py-6">
-            <span className="font-timer text-7xl sm:text-8xl font-bold tracking-tight text-slate-900 dark:text-slate-100 select-none">
+            <span className="font-timer text-5xl sm:text-8xl font-bold tracking-tight text-slate-900 dark:text-slate-100 select-none">
               {formatTimeDisplay(displaySeconds)}
             </span>
           </div>
@@ -385,7 +383,7 @@ export default function FocusTimer({
             </div>
           </div>
 
-          {/* 卡片 2：今日心流时间线 Feed */}
+          {/* 当天专注记录 */}
           <div className="paper-card rounded-2xl p-5 border border-[#f1f3f5] dark:border-[#1a2233] space-y-3">
             <div className="text-xs font-bold text-slate-800 dark:text-slate-200 pb-2 border-b border-[#f1f3f5] dark:border-[#1a2233]">
               {t('focus.history')}
@@ -393,7 +391,7 @@ export default function FocusTimer({
 
             {todaySessions.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400 dark:text-slate-600">
-                {t('focus.freeFocus')}
+                {t('focus.noSessions')}
               </div>
             ) : (
               <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
@@ -410,7 +408,7 @@ export default function FocusTimer({
                           {completedTime}
                         </span>
                         <span className="truncate font-medium text-slate-800 dark:text-slate-200">
-                          {session.taskTitle || t('focus.freeFocus')}
+                          {session.taskTitle && session.taskTitle !== '自由专注' ? session.taskTitle : t('focus.freeFocus')}
                         </span>
                       </div>
 
