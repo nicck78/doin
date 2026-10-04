@@ -19,3 +19,16 @@ test('mobile week clips spanning tasks and keeps tasks outside the window reacha
   assert.deepEqual(view.singleDayByDate['2026-10-03'].map(task => task.id), ['one']);
   assert.deepEqual(view.outside.map(task => task.id), ['later']);
 });
+
+test('mobile week keeps every scheduled task and its full title for a crowded day', () => {
+  const days = ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07'];
+  const tasks = Array.from({ length: 7 }, (_, index) => ({
+    id: `task-${index}`,
+    title: `第 ${index + 1} 项需要完整显示的较长任务名称`,
+    startDate: '2026-10-03',
+    dueDate: '2026-10-03'
+  }));
+  const view = getMobileTimeline(tasks, days);
+  assert.equal(view.singleDayByDate['2026-10-03'].length, 7);
+  assert.deepEqual(view.singleDayByDate['2026-10-03'].map(task => task.title), tasks.map(task => task.title));
+});

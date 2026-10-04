@@ -50,12 +50,12 @@ export default function MobileCalendar({ tasks, dailyReviews, focusSessions, onO
 
       <div className="mt-4 space-y-1.5" aria-label={t('timeline.multiDay')}>
         {bars.length === 0 && <p className="text-xs text-slate-400">{t('timeline.noMultiDayInWeek')}</p>}
-        {bars.map(({ task, startColumn, span, startsBefore, endsAfter }) => <div key={task.id} className="grid grid-cols-7 gap-0.5 h-9">
+        {bars.map(({ task, startColumn, span, startsBefore, endsAfter }) => <div key={task.id} className="grid grid-cols-7 gap-0.5">
           <button type="button" onClick={() => onEditTask(task)} title={`${task.title} · ${task.startDate} → ${task.dueDate}`} aria-label={`${task.title} · ${task.startDate} → ${task.dueDate}`}
-            style={{ gridColumn: `${startColumn} / span ${span}`, backgroundColor: getColorById(task.color).hex }}
-            className={`min-w-0 rounded-md px-1.5 text-left text-[10px] font-semibold text-white flex items-center overflow-hidden ${task.isCompleted ? 'opacity-45 line-through' : ''}`}>
+            style={{ gridColumn: `${startColumn} / span ${span}`, backgroundColor: getColorById(task.color).darkBg }}
+            className={`min-w-0 min-h-11 rounded-md px-2 py-1.5 text-left text-[11px] leading-tight font-medium text-white flex items-start gap-1 ${task.isCompleted ? 'opacity-60 line-through' : ''}`}>
             {startsBefore && <span className="flex-shrink-0">←</span>}
-            <span className="truncate min-w-0">{task.title}</span>
+            <span className="min-w-0 flex-1 whitespace-normal break-all">{task.title}</span>
             {endsAfter && <span className="flex-shrink-0">→</span>}
           </button>
         </div>)}
@@ -65,10 +65,9 @@ export default function MobileCalendar({ tasks, dailyReviews, focusSessions, onO
         {days.map(date => {
           const dayTasks = singleDayByDate[date];
           return <div key={date} className={`min-w-0 rounded-md p-0.5 space-y-1 ${selectedDate === date ? 'bg-blue-50 dark:bg-blue-950/30' : 'bg-slate-50 dark:bg-[#171f2d]'}`}>
-            {dayTasks.slice(0, 2).map(task => <button key={task.id} type="button" onClick={() => setSelectedDate(date)} aria-label={`${getFriendlyDateLabel(date, lang)} · ${task.title}`}
-              className={`w-full min-w-0 h-8 rounded px-0.5 text-[10px] text-left truncate ${task.isCompleted ? 'line-through opacity-50' : ''}`}
-              style={{ borderLeft: `3px solid ${getColorById(task.color).hex}` }}>{task.title}</button>)}
-            {dayTasks.length > 2 && <button type="button" onClick={() => setSelectedDate(date)} className="w-full text-[10px] text-slate-500 dark:text-slate-400" aria-label={t('timeline.moreTasks', { count: dayTasks.length - 2 })}>+{dayTasks.length - 2}</button>}
+            {dayTasks.map(task => <button key={task.id} type="button" onClick={() => { setSelectedDate(date); onEditTask(task); }} aria-label={`${getFriendlyDateLabel(date, lang)} · ${task.title}`}
+              className={`w-full min-w-0 min-h-11 rounded-md px-1.5 py-2 text-[11px] leading-tight text-left text-slate-900 whitespace-normal break-all border-t-[3px] ${task.isCompleted ? 'line-through opacity-60' : ''}`}
+              style={{ backgroundColor: getColorById(task.color).lightBg, borderTopColor: getColorById(task.color).hex }}>{task.title}</button>)}
           </div>;
         })}
       </div>

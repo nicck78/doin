@@ -70,7 +70,7 @@ export const en = {
   'timeline.dayDetails': 'Tasks for selected day',
   'timeline.noMultiDayInWeek': 'No multi-day tasks in these seven days',
   'timeline.moreTasks': '{count} more tasks',
-  'timeline.tapDayHint': 'Tap a date for the full task list',
+  'timeline.tapDayHint': 'Tap a task to edit; tap a date for that day’s record',
   'timeline.outsideWeek': 'Multi-day tasks outside these seven days',
   'timeline.multiDay': 'Multi-day tasks',
   'timeline.multiDayEmpty': 'No pending multi-day tasks',

@@ -1,7 +1,12 @@
 /**
- * 前台专注计时：用时间戳计算时长，减少定时器节流的影响。
- * 手机进入后台时由 useTimerEngine 暂停；这里不提供后台计时保证。
+ * 专注计时使用时间戳计算时长，减少锁屏或后台定时器节流造成的误差。
+ * 这不提供锁屏通知，也不保证应用进程被系统结束后继续运行。
  */
+
+export function calculateElapsedMs(accumulatedMs, startedAt, now = Date.now()) {
+  const completedSegments = Math.max(0, accumulatedMs);
+  return startedAt === null ? completedSegments : completedSegments + Math.max(0, now - startedAt);
+}
 
 // 格式化秒数为 MM:SS 或 HH:MM:SS
 export function formatTimeDisplay(totalSeconds) {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getTodayString } from '../utils/dateUtils.js';
-import { playChimeSound } from '../utils/timerEngine.js';
+import { calculateElapsedMs, playChimeSound } from '../utils/timerEngine.js';
 import { App as CapacitorApp } from '@capacitor/app';
 import { isAndroidApp } from '../platform/platform.js';
 
@@ -19,6 +19,7 @@ export function useTimerEngine({
   const startTimestampRef = useRef(null);
   const accumulatedMsRef = useRef(0);
   const intervalIdRef = useRef(null);
+  const completionPendingRef = useRef(false);
 
   const [selectedTaskId, setSelectedTaskId] = useState(initialTask ? initialTask.id : '');
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -43,9 +44,7 @@ export function useTimerEngine({
   useEffect(() => {
     if (status === 'running') {
       intervalIdRef.current = setInterval(() => {
-        const now = Date.now();
-        const currentSegment = now - startTimestampRef.current;
-        const total = accumulatedMsRef.current + currentSegment;
+        const total = calculateElapsedMs(accumulatedMsRef.current, startTimestampRef.current);
         setElapsedMs(total);
 
         if (mode === 'pomodoro') {
@@ -67,24 +66,31 @@ export function useTimerEngine({
     };
   }, [status, mode, countdownMinutes]);
 
-  // 首版手机计时只保证前台。离开应用时暂停，避免把后台时长误记为专注。
+  // 手机返回前台时立即按时间戳补算；锁屏期间定时器可能被系统节流。
   useEffect(() => {
     if (!isAndroidApp() || status !== 'running') return;
     let listener;
+    let disposed = false;
     CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-      if (!isActive) handlePause();
-    }).then(handle => { listener = handle; });
-    return () => { listener?.remove(); };
+      if (isActive && startTimestampRef.current !== null) {
+        setElapsedMs(calculateElapsedMs(accumulatedMsRef.current, startTimestampRef.current));
+      }
+    }).then(handle => {
+      if (disposed) handle.remove();
+      else listener = handle;
+    });
+    return () => { disposed = true; listener?.remove(); };
   }, [status]);
 
   const handleStart = () => {
+    completionPendingRef.current = false;
     startTimestampRef.current = Date.now();
     setStatus('running');
   };
 
   const handlePause = () => {
     if (startTimestampRef.current) {
-      accumulatedMsRef.current += Date.now() - startTimestampRef.current;
+      accumulatedMsRef.current = calculateElapsedMs(accumulatedMsRef.current, startTimestampRef.current);
       startTimestampRef.current = null;
     }
     setElapsedMs(accumulatedMsRef.current);
@@ -105,7 +111,9 @@ export function useTimerEngine({
   };
 
   const handleCompleteSession = (finalMs = null) => {
-    const totalMsToSave = finalMs !== null ? finalMs : accumulatedMsRef.current + (status === 'running' && startTimestampRef.current ? Date.now() - startTimestampRef.current : 0);
+    if (completionPendingRef.current) return;
+    completionPendingRef.current = true;
+    const totalMsToSave = finalMs !== null ? finalMs : calculateElapsedMs(accumulatedMsRef.current, status === 'running' ? startTimestampRef.current : null);
     const durationSeconds = Math.max(1, Math.round(totalMsToSave / 1000));
     playChimeSound();
 

@@ -70,7 +70,7 @@ export const zh = {
   'timeline.dayDetails': '当天任务',
   'timeline.noMultiDayInWeek': '这七天没有跨天任务',
   'timeline.moreTasks': '另有 {count} 项',
-  'timeline.tapDayHint': '点日期查看完整任务',
+  'timeline.tapDayHint': '点任务编辑，点日期查看当天记录',
   'timeline.outsideWeek': '七天之外的跨天任务',
   'timeline.multiDay': '跨天任务',
   'timeline.multiDayEmpty': '暂无跨天任务',
