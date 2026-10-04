@@ -4,11 +4,11 @@ android {
     namespace = "com.doin.personal"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.doin.personal"
+        applicationId "com.doin.reader"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1.0-beta.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +16,29 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        readerRelease {
+            def keyPath = System.getenv('DOIN_READER_KEYSTORE_PATH')
+            def storeSecret = System.getenv('DOIN_READER_STORE_PASSWORD')
+            def keySecret = System.getenv('DOIN_READER_KEY_PASSWORD')
+            if ((!keyPath || !storeSecret || !keySecret) &&
+                gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
+                throw new GradleException('读者版发布构建缺少仓库外的签名环境变量')
+            }
+            if (keyPath && storeSecret && keySecret) {
+                storeFile file(keyPath)
+                storeType 'pkcs12'
+                storePassword storeSecret
+                keyAlias 'doin-reader'
+                keyPassword keySecret
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.readerRelease
         }
     }
 }

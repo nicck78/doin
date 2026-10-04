@@ -31,7 +31,7 @@ export const en = {
   'settings.data.desc': 'Data stays on this device. It does not sync automatically.',
   'settings.about': 'About doin',
   'settings.about.desc': 'Tasks, a seven-day plan, and focus time.',
-  'settings.about.version': 'Version v1.0.0 · MIT License',
+  'settings.about.version': 'Version v1.1.0-beta.1 · MIT License',
 
   // Today View
   'today.title': 'Today',

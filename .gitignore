@@ -10,7 +10,12 @@ node_modules/
 dist/
 dist-electron/
 release/
+reader-artifacts/
 build/
+*.jks
+*.keystore
+*.p12
+*.pem
 
 # Local User & Privacy Data
 doin_data.json

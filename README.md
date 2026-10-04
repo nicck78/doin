@@ -4,10 +4,10 @@
 
 # doin
 
-**一款沉静、克制、具备多日时间轴与防休眠专注计时的 Windows 独立桌面效率软件**
+**一款本地保存待办、七天安排与专注记录的 Windows / Android 工具**
 
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078d7.svg?style=flat-square&logo=windows)](https://microsoft.com)
-[![Electron](https://img.shields.io/badge/Electron-v31.3.1-47848F.svg?style=flat-square&logo=electron)](https://www.electronjs.org/)
+[![Electron](https://img.shields.io/badge/Electron-v44.5.1-47848F.svg?style=flat-square&logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-v18.3.1-61DAFB.svg?style=flat-square&logo=react)](https://reactjs.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D20.0.0-339933.svg?style=flat-square&logo=node.js)](https://nodejs.org/)
@@ -25,7 +25,7 @@
 软件深度整合了：
 1. **今日聚焦（Today's Focus）**：双栏人体工学排版，待办推进与常驻效率伴侣协同；
 2. **多日全景（Multi-day Timeline）**：滚动 7 天排期横向拉通，告别截止日焦虑；
-3. **精准专注（Anti-drift Timer）**：采用绝对时间戳差值算法，系统休眠分秒不差，内置纯净禅模式；
+3. **专注计时（Focus Timer）**：依据时间戳补算经过时间；手机切后台与锁屏曾在 HONOR 80 上做约 20 秒短测；
 4. **桌面悬浮药丸（Mini Capsule）**：一键缩小为微型置顶胶囊，随心拖拽，沉浸伴随心流；
 5. **每日日志（Daily Journal）**：免干扰的大书写板，随手记录思考与当日客观事实复盘；
 6. **极简纯色美学**：致敬极致纯白（Light）与深邃黑曜石（Dark）的双重现代质感。
@@ -60,7 +60,7 @@
 - **单输入框纸质体验**：宽敞无压迫感的书写抽屉，随手沉淀今日思绪与灵感；
 - **客观事实自动汇总**：自动呈现当日累计专注时长与完成清单数，为每日复盘提供真实依据。
 
-### 6. 100% 数据隐私与本地自主权
+### 6. 本地数据与手动备份
 - **免注册、零云端依赖**：无需手机号、无账户体系、无需租用任何云服务；
 - **明文 JSON 持久化**：所有任务、专注历史与日志均保存在本地磁盘；
 - **文件备份与恢复**：支持导出 JSON；导入会整体替换当前数据，操作前自动在本机保存恢复文件。电脑与手机各自新增的数据不会自动合并。
@@ -88,28 +88,31 @@ npm start
 
 ## 📦 独立桌面打包
 
-项目内置了自动化独立桌面打包工具，可一键装配免安装的 Windows 64 位绿色版客户端：
+项目内置开发用桌面打包工具；面向读者的 Windows 64 位完整文件夹使用 `npm run build` 后再执行 `npm run package:reader` 生成。读者下载时应获取包含整个文件夹的 ZIP，不能只复制 exe：
 
 ```bash
-# 执行桌面独立打包
-npm run package
+# 构建并装配读者版完整文件夹
+npm run build
+npm run package:reader
 ```
 
 **产物说明**：
 - **绿色免安装主程序**：生成于 `release/doin-win32-x64/doin.exe`
 - **专属图标快捷方式**：自动在根目录下创建带海獭图标的 `doin.lnk`
 
+上述 `npm run package` 是原开发版脚本。读者版输出在 `release/doin-reader-<版本>-windows-x64/`，与现有开发版文件夹分开；压缩发布前还需试装、检查内容及生成校验值。
+
 ---
 
 ## 🔒 数据主权与备份恢复
 
-> Android 自用测试版已在 HONOR 80（Android 15）用虚构任务实测：待办、纵向 7 天全景、跨天截止日、待安排与历史未完成流转、短时前台计时、日志、主题和双语。手机进入后台时，用户一次约 15 秒短测观察到计时暂停并保留时长。手机端不提供桌面悬浮胶囊；锁屏、长时间后台、通知等仍待讨论和验证。曾有一次恢复后任务数从 5 回到 4 的现象，原因未证实；已增加顺序写入并再次验证关闭重开，真实数据使用前应保留外部备份。
+> Android 自用调试版已在 HONOR 80（Android 15）用虚构任务验证：七列全景全部展开、跨天任务连续横条、短时切后台与锁屏后秒表和倒计时按经过时间补算。用户曾观察到旧版后台暂停；该描述不适用于 2026-10-04 后的版本。长时间后台、应用进程结束、倒计时到点通知和其他机型尚未验证。手机端没有桌面悬浮胶囊。曾出现一次导入恢复后任务数回退，原因未证实；重要数据请另存外部备份。
 
 用户的全部待办清单、专注记录与每日日志均透明存储在本地：
 
 - **存储格式**：标准 JSON 文本文件（纯明文、无私有加密绑架）；
 - **如何导出备份**：
-  点击顶部导航栏右上角的【导出备份】图标，即可将一份带时间戳的 `doin-backup-YYYY-MM-DD.json` 文件保存至任意文件夹或 U 盘；
+  在【设置 → 导出备份】操作，并核对生成的 `doin-backup-...json` 文件确实存在；桌面顶栏也有导出快捷按钮。Android 需在系统分享菜单中选择本机保存位置；
 - **如何恢复数据**：
   点击【导入备份】选择 JSON，核对数据摘要后确认。导入前会保存接收端恢复文件；导入后以来源文件为准，接收端新内容不会自动合并。可在设置中选择“恢复导入前数据”撤销。首次使用前建议另存一份外部备份；
 - **当前运行方式**：没有账号或云服务，数据保存在各设备本地。实际设备、网络、存储及开发成本尚未完整统计；本地文件仍可能因误删、设备故障或覆盖导入而丢失，请保留独立备份。
@@ -128,6 +131,10 @@ Android 导出通过系统分享菜单选择保存位置。请自行核对文件
 以上步骤在 HONOR 80 上用虚构数据试过。手机文件管理的名称可能随系统版本不同；复制时不要选“移动”或覆盖同名旧备份。
 
 ---
+
+## 📱 Android 读者体验版
+
+读者版使用独立包名 `com.doin.reader`，可与自用调试版 `com.doin.personal` 并存；两者数据隔离，不会自动同步。Android 安装包必须使用长期保管的正式签名密钥制作，不能用调试 APK 冒充正式版。签名密钥和密码只存于项目目录外的私人位置，不能提交到 GitHub。完整的小白安装、备份步骤见《读者体验版-安装与备份.md》。
 
 ## 🛠 技术架构与目录
 

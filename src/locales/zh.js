@@ -31,7 +31,7 @@ export const zh = {
   'settings.data.desc': '数据保存在本机，不会自动同步。',
   'settings.about': '关于 doin',
   'settings.about.desc': '待办、七天计划与专注计时。',
-  'settings.about.version': '版本 v1.0.0 · MIT 开源许可',
+  'settings.about.version': '版本 v1.1.0-beta.1 · MIT 开源许可',
 
   // 今日页面
   'today.title': '今日待办',

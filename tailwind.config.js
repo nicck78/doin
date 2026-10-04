@@ -14,8 +14,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-        timer: ['"JetBrains Mono"', 'monospace']
+        sans: ['"Segoe UI"', 'Microsoft YaHei UI', 'sans-serif'],
+        timer: ['Consolas', 'monospace']
       },
       keyframes: {
         fadeIn: {
